@@ -98,7 +98,7 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       return evaluateIdentifierExpression(
         (ASTnode as any).identifier,
         env,
-        (ASTnode as any).value as RuntimeValue
+        evaluateBinaryExpression((ASTnode as any).value, env) as RuntimeValue
       );
     case 'UnaryExpression':
       if ((ASTnode as any).operator === '-') {

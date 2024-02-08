@@ -20,7 +20,7 @@ export default class Parser {
     const identifier = this.expect(TokenType.Identifier, 'Expected identifier');
     this.expect(TokenType.Assign, 'Expected assignment operator');
 
-    const value = this.ParseExpression();
+    let value: Expression = this.ParseExpression();
     return {
       type: 'AssignmentExpression',
       identifier: { type: 'Identifier', name: identifier.value } as Identifier,
