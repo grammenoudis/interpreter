@@ -21,6 +21,7 @@ export default class Parser {
     this.expect(TokenType.Assign, 'Expected assignment operator');
 
     let value: Expression = this.ParseExpression();
+
     return {
       type: 'AssignmentExpression',
       identifier: { type: 'Identifier', name: identifier.value } as Identifier,

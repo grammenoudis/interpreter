@@ -95,10 +95,12 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
     case 'Program':
       return evaluateProgram(ASTnode as Program, env);
     case 'AssignmentExpression':
+      let value = evaluate((ASTnode as any).value, env);
+      console.log(value.value);
       return evaluateIdentifierExpression(
         (ASTnode as any).identifier,
         env,
-        evaluateBinaryExpression((ASTnode as any).value, env) as RuntimeValue
+        value
       );
     case 'UnaryExpression':
       if ((ASTnode as any).operator === '-') {
