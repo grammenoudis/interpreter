@@ -8,6 +8,7 @@ export enum TokenType {
   Div,
   Power,
   Assign,
+  Compare,
   EOF,
 }
 
@@ -64,7 +65,21 @@ export function tokenize(input: string): Token[] {
         if (src[0] === '-') {
           tokens.push(makeToken('<-', TokenType.Assign, line, column));
           src.shift();
+        } else if (src[0] === '>') {
+          tokens.push(makeToken('<>', TokenType.Compare, line, column));
+          src.shift();
+        } else if (src[0] == '=') {
+          tokens.push(makeToken('<=', TokenType.Compare, line, column));
+          src.shift();
+        } else {
+          tokens.push(makeToken(char, TokenType.Compare, line, column));
         }
+        break;
+      case '>':
+        if (src[0] === '=') {
+          tokens.push(makeToken('>=', TokenType.Compare, line, column));
+          src.shift();
+        } else tokens.push(makeToken(char, TokenType.Compare, line, column));
         break;
       default:
         if (char.match(/[0-9]/)) {
@@ -80,7 +95,8 @@ export function tokenize(input: string): Token[] {
             src[0]?.match(/[0-9]/) ||
             src[0]?.match(/_/)
           ) {
-            if (KEYWORDS.get(identifier) !== undefined) break;
+            //check if the word is a keyword. If the next character is a space and the word that has been built is a keyword, then break
+            if (KEYWORDS.get(identifier) !== undefined && src[1] != ' ') break;
             identifier += src.shift();
           }
           const reserved = KEYWORDS.get(identifier);
@@ -111,6 +127,6 @@ export function tokenize(input: string): Token[] {
     }
   }
   tokens.push(makeToken('EOF', TokenType.EOF, line, column));
-  // console.log(tokens);
+  console.log(tokens);
   return tokens;
 }

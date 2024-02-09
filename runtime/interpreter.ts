@@ -51,6 +51,16 @@ export function evaluateBinaryExpression(
         type: 'number',
         value: Math.floor(left.value / right.value),
       } as NumberValue;
+    case '<':
+      return { type: 'number', value: left.value < right.value } as any;
+    case '>':
+      return { type: 'number', value: left.value > right.value } as any;
+    case '<=':
+      return { type: 'number', value: left.value <= right.value } as any;
+    case '>=':
+      return { type: 'number', value: left.value >= right.value } as any;
+    case '<>':
+      return { type: 'number', value: left.value !== right.value } as any;
     default:
       console.error(`Unknown operator: ${BinOp.operator}`);
       process.exit(1);
@@ -96,7 +106,6 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       return evaluateProgram(ASTnode as Program, env);
     case 'AssignmentExpression':
       let value = evaluate((ASTnode as any).value, env);
-      console.log(value.value);
       return evaluateIdentifierExpression(
         (ASTnode as any).identifier,
         env,

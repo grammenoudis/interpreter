@@ -15,8 +15,8 @@ env.declareVariable('true', makeBooleanValue(true));
 env.declareVariable('false', makeBooleanValue(false));
 const parser = new Parser();
 const program = parser.ProduceAST(file);
+console.log(program);
 
 const res = evaluate(program, env);
 
-// console.log(program);
 // console.log(res);

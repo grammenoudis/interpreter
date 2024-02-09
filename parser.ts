@@ -29,13 +29,6 @@ export default class Parser {
     } as Statement;
   }
 
-  // private ParseIdentifier(): Identifier {
-  //   return {
-  //     type: 'Identifier',
-  //     name: this.advance().value,
-  //   } as Identifier;
-  // }
-
   private at(): Token {
     return this.tokens[0] as Token;
   }
@@ -78,8 +71,31 @@ export default class Parser {
           return this.ParseAssignmentExpression();
         }
       default:
-        return this.ParseAdditiveExpression();
+        // return this.ParseAdditiveExpression();
+        return this.ParseComparisonExpression();
     }
+  }
+  private ParseComparisonExpression(): Expression {
+    let left = this.ParseAdditiveExpression();
+    while (
+      this.at().value == '<' ||
+      this.at().value == '>' ||
+      this.at().value == '<=' ||
+      this.at().value == '>=' ||
+      this.at().value == '<>' ||
+      this.at().value == '='
+    ) {
+      const operator = this.advance().value;
+      const right = this.ParseAdditiveExpression();
+
+      left = {
+        type: 'BinaryExpression',
+        operator: operator,
+        left: left,
+        right: right,
+      } as BinaryExpression;
+    }
+    return left;
   }
 
   private ParseAdditiveExpression(): Expression {
