@@ -12,12 +12,16 @@ const absolutePath = path.resolve(args[0]);
 const file = fs.readFileSync(absolutePath, 'utf-8');
 
 const env = new Environment();
-env.declareVariable('true', makeBooleanValue(true));
-env.declareVariable('false', makeBooleanValue(false));
+env.declareVariable('ΑΛΗΘΗΣ', makeBooleanValue(false));
+env.declareVariable('ΨΕΥΔΗΣ', makeBooleanValue(true));
 const parser = new Parser();
 const program = parser.ProduceAST(file);
 console.log(program);
 
-const res = evaluate(program, env);
+const res = evaluate(program, env) as any;
 
-// console.log(res);
+for (const print of res) {
+  fs.writeFileSync('output.txt', print + '\n', { flag: 'a' });
+}
+
+console.table(res);

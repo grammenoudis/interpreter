@@ -15,14 +15,30 @@ export enum TokenType {
   Print,
   Seperator,
   Apostrophe,
+  Constants,
+  Variables,
+  RealNumbers,
+  Alphanumericals,
+  Booleans,
+
   EOF,
 }
+
+//clear the output file
 fs.writeFile('output.txt', '', function (err) {});
+
 const KEYWORDS = new Map<string, TokenType>([
   ['MOD', TokenType.Mod],
   ['DIV', TokenType.Div],
   ['EOF', TokenType.EOF],
   ['ΓΡΑΨΕ', TokenType.Print],
+  ['ΑΛΗΘΗΣ', TokenType.Booleans],
+  ['ΨΕΥΔΗΣ', TokenType.Booleans],
+  ['ΣΤΑΘΕΡΕΣ', TokenType.Constants],
+  ['ΜΕΤΑΒΛΗΤΕΣ', TokenType.Variables],
+  ['ΠΡΑΓΜΑΤΙΚΕΣ', TokenType.RealNumbers],
+  ['ΧΑΡΑΚΤΗΡΕΣ', TokenType.Alphanumericals],
+  ['ΛΟΓΙΚΕΣ', TokenType.Booleans],
 ]);
 
 export interface Token {
@@ -42,14 +58,38 @@ function makeToken(
 }
 
 function isWhitespace(char: string): boolean {
-  // return char.match(/\s/) !== null;
   //detect if character is whitespace apart newline
   return char.match(/[ \t]/) !== null;
 }
 
+function expectTemplate(src: string[]): string | void {
+  let programmaKeyword = src.splice(0, 9);
+  if (programmaKeyword.join('') !== 'ΠΡΟΓΡΑΜΜΑ') {
+    return 'Αναμενόταν η λέξη "ΠΡΟΓΡΑΜΜΑ"';
+  }
+
+  while (isWhitespace(src[0])) {
+    src.shift();
+  }
+
+  let ProgramHasName = false;
+  while (src[0] !== '\n') {
+    ProgramHasName = true;
+    src.shift();
+  }
+  if (!ProgramHasName) return 'Το πρόγραμμα σου πρέπει να έχει όνομα';
+  //remove newline character
+  src.shift();
+}
 export function tokenize(input: string): Token[] {
   const tokens: Token[] = [];
   const src: string[] = input.split('');
+  let error = expectTemplate(src);
+  if (error) {
+    console.error(error);
+    process.exit(1);
+  }
+
   let line: number = 1;
   let column: number = 0;
   while (src.length > 0) {

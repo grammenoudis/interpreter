@@ -10,6 +10,8 @@ import {
 } from '../ast';
 import Environment from './environment';
 
+var outputList: any = [];
+
 function evaluateProgram(program: Program, env: Environment): RuntimeValue {
   let lastEvaluated: RuntimeValue = { type: 'number', value: 0 } as NumberValue;
   for (const statement of program.body) {
@@ -127,10 +129,10 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
     case 'PrintStatement':
       let stringToPrint = '';
       for (const statement of (ASTnode as any).value) {
-        stringToPrint = stringToPrint + evaluate(statement, env).value;
+        stringToPrint = stringToPrint + evaluate(statement, env).value + ' ';
       }
-      fs.writeFileSync('output.txt', stringToPrint + '\n');
-      return ASTnode as any;
+      outputList.push(stringToPrint);
+      return outputList as any;
 
     default:
       console.error(`Unknown AST node type: ${(ASTnode as any).type}`);
