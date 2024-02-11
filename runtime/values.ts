@@ -1,8 +1,8 @@
-export type ValueType = 'number' | 'boolean' | 'string';
+export type ValueType = 'number' | 'boolean' | 'string' | 'array';
 
 export interface RuntimeValue {
   type: ValueType;
-  value: number | boolean | string;
+  value: number | boolean | string | RuntimeValue[];
 }
 
 export interface NumberValue extends RuntimeValue {

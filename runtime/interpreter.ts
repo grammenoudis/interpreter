@@ -85,7 +85,7 @@ function evaluateIdentifierExpression(
   value: RuntimeValue
 ): RuntimeValue {
   const val = env.declareVariable(ASTnode.name, {
-    type: 'number',
+    type: typeof value.value,
     value: value.value,
   } as NumberValue);
   return val;

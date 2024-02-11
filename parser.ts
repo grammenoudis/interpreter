@@ -16,19 +16,6 @@ export default class Parser {
     return this.tokens[0].type != TokenType.EOF;
   }
 
-  ParseAssignmentExpression(): Statement {
-    const identifier = this.expect(TokenType.Identifier, 'Expected identifier');
-    this.expect(TokenType.Assign, 'Expected assignment operator');
-
-    let value: Expression = this.ParseExpression();
-
-    return {
-      type: 'AssignmentExpression',
-      identifier: { type: 'Identifier', name: identifier.value } as Identifier,
-      value: value,
-    } as Statement;
-  }
-
   private at(): Token {
     return this.tokens[0] as Token;
   }
@@ -71,9 +58,26 @@ export default class Parser {
           return this.ParseAssignmentExpression();
         }
       default:
-        // return this.ParseAdditiveExpression();
         return this.ParseComparisonExpression();
     }
+  }
+  ParseAssignmentExpression(): Statement {
+    const identifier = this.expect(TokenType.Identifier, 'Expected identifier');
+    this.expect(TokenType.Assign, 'Expected assignment operator');
+
+    let value: Expression = this.ParseExpression();
+
+    const newLine = this.tokens.shift();
+    if (newLine?.type != TokenType.EndOfLine && newLine?.value != 'EOF') {
+      console.error('Expected end of line', newLine);
+      process.exit(1);
+    }
+
+    return {
+      type: 'AssignmentExpression',
+      identifier: { type: 'Identifier', name: identifier.value } as Identifier,
+      value: value,
+    } as Statement;
   }
   private ParseComparisonExpression(): Expression {
     let left = this.ParseAdditiveExpression();

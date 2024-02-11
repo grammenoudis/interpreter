@@ -9,13 +9,18 @@ export enum TokenType {
   Power,
   Assign,
   Compare,
+  EndOfLine,
+  Print,
+  Seperator,
+  Apostrophe,
   EOF,
 }
 
 const KEYWORDS = new Map<string, TokenType>([
   ['MOD', TokenType.Mod],
   ['DIV', TokenType.Div],
-  ['<-', TokenType.Assign],
+  ['EOF', TokenType.EOF],
+  ['ΓΡΑΨΕ', TokenType.Print],
 ]);
 
 export interface Token {
@@ -35,7 +40,9 @@ function makeToken(
 }
 
 function isWhitespace(char: string): boolean {
-  return char.match(/\s/) !== null;
+  // return char.match(/\s/) !== null;
+  //detect if character is whitespace apart newline
+  return char.match(/[ \t]/) !== null;
 }
 
 export function tokenize(input: string): Token[] {
@@ -81,6 +88,15 @@ export function tokenize(input: string): Token[] {
           src.shift();
         } else tokens.push(makeToken(char, TokenType.Compare, line, column));
         break;
+      case ',':
+        tokens.push(makeToken(char, TokenType.Seperator, line, column));
+        break;
+      case "'":
+        tokens.push(makeToken(char, TokenType.Apostrophe, line, column));
+        break;
+      case '\n':
+        tokens.push(makeToken(char, TokenType.EndOfLine, line, column));
+        break;
       default:
         if (char.match(/[0-9]/)) {
           let number = char;
@@ -88,10 +104,14 @@ export function tokenize(input: string): Token[] {
             number += src.shift();
           }
           tokens.push(makeToken(number, TokenType.Number, line, column));
-        } else if (char.match(/[a-zA-Z]/)) {
+        } else if (
+          char.match(/[a-zA-ZΑ-Ω]/) ||
+          char.match(/[0-9]/) ||
+          char.match(/_/)
+        ) {
           let identifier = char;
           while (
-            src[0]?.match(/[a-zA-Z]/) ||
+            src[0]?.match(/[a-zA-ZΑ-Ω]/) ||
             src[0]?.match(/[0-9]/) ||
             src[0]?.match(/_/)
           ) {
