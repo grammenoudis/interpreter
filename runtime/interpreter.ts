@@ -12,13 +12,13 @@ import Environment from './environment';
 
 var outputList: any = [];
 
-function evaluateProgram(program: Program, env: Environment): RuntimeValue {
-  let lastEvaluated: RuntimeValue = { type: 'number', value: 0 } as NumberValue;
+function evaluateProgram(program: Program, env: Environment): any {
+  // let lastEvaluated: RuntimeValue = { type: 'number', value: 0 } as NumberValue;
   for (const statement of program.body) {
-    lastEvaluated = evaluate(statement, env);
+    evaluate(statement, env);
     // console.log(lastEvaluated);
   }
-  return lastEvaluated;
+  return outputList;
 }
 export function evaluateBinaryExpression(
   BinOp: BinaryExpression,
