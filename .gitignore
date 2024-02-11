@@ -2,3 +2,4 @@ dist
 input.txt
 output.txt
 build
+.DS_Store
