@@ -47,6 +47,24 @@ export default class Parser {
     return program;
   }
 
+  private ParsePrintStatement(): Statement {
+    if (this.at().type == TokenType.Print) {
+      this.advance();
+      let elementsToPrint: Expression[] = [];
+      while (this.at().type != TokenType.EndOfLine) {
+        elementsToPrint.push(this.ParseExpression());
+        if (this.at().type == TokenType.EndOfLine) break;
+        this.expect(TokenType.Seperator, 'Expected comma');
+      }
+      this.expect(TokenType.EndOfLine, 'Expected end of line');
+      return {
+        type: 'PrintStatement',
+        value: elementsToPrint as Expression[],
+      } as Statement;
+    }
+    return this.ParseStatement();
+  }
+
   private ParseStatement(): Statement {
     return this.ParseExpression();
   }
@@ -191,6 +209,8 @@ export default class Parser {
           }`
         );
         return expression;
+      case TokenType.Print:
+        return this.ParsePrintStatement();
       default:
         console.error('Unexpected token', this.at());
         process.exit(1);

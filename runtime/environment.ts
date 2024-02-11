@@ -3,10 +3,12 @@ import { RuntimeValue } from './values';
 export default class Environment {
   private parent?: Environment;
   private variables: Map<string, RuntimeValue>;
+  private variableTypes: Map<string, string>;
 
   constructor(parentENV?: Environment) {
     this.parent = parentENV;
     this.variables = new Map<string, RuntimeValue>();
+    this.variableTypes = new Map<string, string>();
   }
 
   public declareVariable(name: string, value: RuntimeValue): RuntimeValue {

@@ -1,4 +1,5 @@
 import { ValueType, RuntimeValue, NumberValue } from './values';
+import * as fs from 'fs';
 import {
   BinaryExpression,
   Identifier,
@@ -13,7 +14,7 @@ function evaluateProgram(program: Program, env: Environment): RuntimeValue {
   let lastEvaluated: RuntimeValue = { type: 'number', value: 0 } as NumberValue;
   for (const statement of program.body) {
     lastEvaluated = evaluate(statement, env);
-    console.log(lastEvaluated);
+    // console.log(lastEvaluated);
   }
   return lastEvaluated;
 }
@@ -123,6 +124,13 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
           value: ((ASTnode as any).right as RuntimeValue).value,
         } as NumberValue;
       }
+    case 'PrintStatement':
+      let stringToPrint = '';
+      for (const statement of (ASTnode as any).value) {
+        stringToPrint = stringToPrint + evaluate(statement, env).value;
+      }
+      fs.writeFileSync('output.txt', stringToPrint + '\n');
+      return ASTnode as any;
 
     default:
       console.error(`Unknown AST node type: ${(ASTnode as any).type}`);

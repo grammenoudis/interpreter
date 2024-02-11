@@ -6,7 +6,8 @@ export type NodeTypes =
   | 'UnaryExpression'
   | 'Program'
   | 'CallExpression'
-  | 'FunctionDeclaration';
+  | 'FunctionDeclaration'
+  | 'PrintStatement';
 
 export interface Statement {
   type: NodeTypes;
