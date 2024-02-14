@@ -65,15 +65,17 @@ export interface Token {
   type: TokenType;
   line: number;
   column: number;
+  arrayCell?: number;
 }
 
 function makeToken(
   value = '',
   type: TokenType,
   line: number,
-  column: number
+  column: number,
+  arrayCell?: number
 ): Token {
-  return { value, type, line, column };
+  return { value, type, line, column, arrayCell };
 }
 
 function isWhitespace(char: string): boolean {
@@ -163,6 +165,7 @@ export function tokenize(input: string): Token[] {
       default:
         let charactersToBuild: string = char;
         let isExpectingString: boolean = char == `'`;
+        let arrayCell = '';
 
         if (isExpectingString) {
           while (!isWhitespace(src[0]) && src[0] !== '\n') {
@@ -172,18 +175,31 @@ export function tokenize(input: string): Token[] {
           }
         } else {
           while (
-            src[0].match(/[a-zA-ZΑ-Ω0-9.]/) &&
-            !isWhitespace(src[0]) &&
+            (src[0].match(/[a-zA-ZΑ-Ω0-9.]/) || src[0] == '[') &&
             src[0] !== '\n'
           ) {
-            charactersToBuild += src.shift();
-            column++;
+            if (src[0] === '[') {
+              src.shift();
+              while (
+                (src[0] as string) !== ']' &&
+                (src[0] as string) !== '\n'
+              ) {
+                if (isWhitespace(src[0])) {
+                  src.shift();
+                } else {
+                  arrayCell += src.shift();
+                  column++;
+                }
+              }
+              // Shift the closing bracket
+              src.shift();
+            } else if (!isWhitespace(src[0])) {
+              charactersToBuild += src.shift();
+              column++;
+            }
           }
         }
 
-        // if (src[0] != '\n') {
-        //   src.shift();
-        // }
         let reserved = KEYWORDS.get(charactersToBuild);
         if (reserved !== undefined) {
           tokens.push(
@@ -212,9 +228,20 @@ export function tokenize(input: string): Token[] {
             );
           }
         } else if (charactersToBuild[0].match(/[a-zA-ZΑ-Ω]/)) {
-          tokens.push(
-            makeToken(charactersToBuild, TokenType.Identifier, line, column)
-          );
+          if (arrayCell) {
+            tokens.push(
+              makeToken(
+                charactersToBuild,
+                TokenType.Identifier,
+                line,
+                column,
+                parseInt(arrayCell)
+              )
+            );
+          } else
+            tokens.push(
+              makeToken(charactersToBuild, TokenType.Identifier, line, column)
+            );
         } else {
           console.error(
             `Αγνωστος χαρακτήρας: '${char}' στην γραμμή ${line}, στήλη ${column}`
@@ -222,47 +249,6 @@ export function tokenize(input: string): Token[] {
           process.exit(1);
         }
     }
-    // if (char.match(/[0-9]/)) {
-    //   let number = char;
-    //   while (src[0]?.match(/[0-9]/)) {
-    //     number += src.shift();
-    //   }
-    //   tokens.push(makeToken(number, TokenType.Number, line, column));
-    // } else if (
-    //   char.match(/[a-zA-ZΑ-Ω]/) ||
-    //   char.match(/[0-9]/) ||
-    //   char.match(/_/)
-    // ) {
-    //   let identifier = char;
-    //   while (
-    //     src[0]?.match(/[a-zA-ZΑ-Ω]/) ||
-    //     src[0]?.match(/[0-9]/) ||
-    //     src[0]?.match(/_/)
-    //   ) {
-    //     //check if the word is a keyword. If the next character is a space and the word that has been built is a keyword, then break
-    //     if (KEYWORDS.get(identifier) !== undefined && src[1] != ' ') break;
-    //     identifier += src.shift();
-    //   }
-    //   const reserved = KEYWORDS.get(identifier);
-    //   if (typeof reserved != 'number') {
-    //     tokens.push(
-    //       makeToken(identifier, TokenType.Identifier, line, column)
-    //     );
-    //     column += identifier.length - 2;
-    //   } else {
-    //     tokens.push(
-    //       makeToken(identifier, reserved as TokenType, line, column)
-    //     );
-    //     column += identifier.length - 1;
-    //   }
-    // } else if (isWhitespace(char)) {
-    //   column++;
-    // } else {
-    //   console.error(
-    //     `Αγνωστος χαρακτήρας: '${char}' στην γραμμή ${line}, στήλη ${column}`
-    //   );
-    //   process.exit(1);
-    // }
     column++;
     if (char === '\n') {
       line++;
