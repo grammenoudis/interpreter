@@ -47,6 +47,96 @@ export default class Parser {
     return program;
   }
 
+  private ParseStatement(): Statement {
+    return this.ParseExpression();
+  }
+
+  private ParseDeclarationOfVariables(): Statement {
+    let variablesToDeclare: Identifier[] = [];
+    let typeOfVariables = this.advance().type;
+    this.expect(TokenType.Colon, 'Expected colon');
+    switch (typeOfVariables) {
+      case TokenType.Integers:
+        while (this.at().type != TokenType.EndOfLine) {
+          if (this.at().type != TokenType.Identifier) {
+            console.error('Expected identifier', this.at());
+            process.exit(1);
+          }
+          variablesToDeclare.push({
+            type: 'Identifier',
+            name: this.advance().value,
+          } as Identifier);
+          if (this.at().type == TokenType.EndOfLine) break;
+          this.expect(TokenType.Seperator, 'Expected comma');
+        }
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
+        console.log('Variables to declare', variablesToDeclare);
+        return {
+          type: 'IntegerVariableDeclaration',
+          value: variablesToDeclare,
+        } as Statement;
+      case TokenType.RealNumbers:
+        while (this.at().type != TokenType.EndOfLine) {
+          variablesToDeclare.push({
+            type: 'Identifier',
+            name: this.advance().value,
+          } as Identifier);
+          if (this.at().type == TokenType.EndOfLine) break;
+          this.expect(TokenType.Seperator, 'Expected comma');
+        }
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
+        return {
+          type: 'RealVariableDeclaration',
+          value: variablesToDeclare,
+        } as Statement;
+      case TokenType.Booleans:
+        while (this.at().type != TokenType.EndOfLine) {
+          variablesToDeclare.push({
+            type: 'Identifier',
+            name: this.advance().value,
+          } as Identifier);
+          if (this.at().type == TokenType.EndOfLine) break;
+          this.expect(TokenType.Seperator, 'Expected comma');
+        }
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
+        return {
+          type: 'BooleanVariableDeclaration',
+          value: variablesToDeclare,
+        } as Statement;
+      case TokenType.Constants:
+        while (this.at().type != TokenType.EndOfLine) {
+          variablesToDeclare.push({
+            type: 'Identifier',
+            name: this.advance().value,
+          } as Identifier);
+          if (this.at().type == TokenType.EndOfLine) break;
+          this.expect(TokenType.Seperator, 'Expected comma');
+        }
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
+        return {
+          type: 'ConstantVariableDeclaration',
+          value: variablesToDeclare,
+        } as Statement;
+      case TokenType.Alphanumericals:
+        while (this.at().type != TokenType.EndOfLine) {
+          variablesToDeclare.push({
+            type: 'Identifier',
+            name: this.advance().value,
+          } as Identifier);
+          if (this.at().type == TokenType.EndOfLine) break;
+          this.expect(TokenType.Seperator, 'Expected comma');
+        }
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
+        return {
+          type: 'StringVariableDeclaration',
+          value: variablesToDeclare,
+        } as Statement;
+      default:
+        console.error('Unexpected token', this.at());
+        process.exit(1);
+    }
+  }
+
   private ParsePrintStatement(): Statement {
     if (this.at().type == TokenType.Print) {
       this.advance();
@@ -63,10 +153,6 @@ export default class Parser {
       } as Statement;
     }
     return this.ParseStatement();
-  }
-
-  private ParseStatement(): Statement {
-    return this.ParseExpression();
   }
 
   private ParseExpression(): Expression {
@@ -193,7 +279,8 @@ export default class Parser {
           type: 'Identifier',
           name: this.advance().value,
         } as Identifier;
-      case TokenType.Number:
+      case TokenType.Integer:
+      case TokenType.RealNumber:
         return {
           type: 'NumberLiteral',
           value: parseFloat(this.advance().value),
@@ -211,6 +298,20 @@ export default class Parser {
         return expression;
       case TokenType.Print:
         return this.ParsePrintStatement();
+      case TokenType.Variables:
+        this.advance();
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
+        return this.ParseDeclarationOfVariables();
+      case TokenType.Integers:
+      case TokenType.RealNumbers:
+      case TokenType.Booleans:
+      case TokenType.Constants:
+      case TokenType.Alphanumericals:
+        return this.ParseDeclarationOfVariables();
+      case TokenType.Start:
+        this.advance();
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
+        return this.ParseStatement();
       default:
         console.error('Unexpected token', this.at());
         process.exit(1);

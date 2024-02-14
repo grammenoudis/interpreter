@@ -11,14 +11,16 @@ export default class Environment {
     this.variableTypes = new Map<string, string>();
   }
 
-  public declareVariable(name: string, value: RuntimeValue): RuntimeValue {
-    this.variables.set(name, value);
-    return value;
+  public declareVariable(name: string, type: string): void {
+    this.variableTypes.set(name, type);
+    return;
   }
 
   public assignVariable(name: string, value: RuntimeValue): RuntimeValue {
-    const env = this.resolve(name);
-    env.variables.set(name, value);
+    if (this.variableTypes.get(name) !== value.type) {
+      throw new Error(`Type mismatch: cannot assign ${value.type} to ${name}`);
+    }
+    this.variables.set(name, value);
     return value;
   }
 

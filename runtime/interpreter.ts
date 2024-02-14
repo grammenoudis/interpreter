@@ -87,10 +87,7 @@ function evaluateIdentifierExpression(
   env: Environment,
   value: RuntimeValue
 ): RuntimeValue {
-  const val = env.declareVariable(ASTnode.name, {
-    type: typeof value.value,
-    value: value.value,
-  } as NumberValue);
+  const val = env.assignVariable(ASTnode.name, value);
   return val;
 }
 
@@ -100,7 +97,9 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       return evaluateIdentifier(ASTnode as Identifier, env);
     case 'NumberLiteral':
       return {
-        type: 'number',
+        type: Number.isInteger((ASTnode as NumericLiteral).value)
+          ? 'Integer'
+          : ('Real' as ValueType),
         value: (ASTnode as NumericLiteral).value,
       } as NumberValue;
     case 'BinaryExpression':
@@ -109,6 +108,7 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       return evaluateProgram(ASTnode as Program, env);
     case 'AssignmentExpression':
       let value = evaluate((ASTnode as any).value, env);
+      env.assignVariable((ASTnode as any).identifier.name, value);
       return evaluateIdentifierExpression(
         (ASTnode as any).identifier,
         env,
@@ -132,8 +132,17 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
         stringToPrint = stringToPrint + evaluate(statement, env).value + ' ';
       }
       outputList.push(stringToPrint);
-      return { type: 'string', value: stringToPrint } as RuntimeValue;
-
+      return { type: 'String', value: stringToPrint } as RuntimeValue;
+    case 'IntegerVariableDeclaration':
+      for (const variable of (ASTnode as any).value) {
+        env.declareVariable(variable.name, 'Integer');
+      }
+      return {} as NumberValue;
+    case 'RealVariableDeclaration':
+      for (const variable of (ASTnode as any).value) {
+        env.declareVariable(variable.name, 'Real');
+      }
+      return {} as NumberValue;
     default:
       console.error(`Unknown AST node type: ${(ASTnode as any).type}`);
       process.exit(1);

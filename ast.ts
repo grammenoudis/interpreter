@@ -7,7 +7,12 @@ export type NodeTypes =
   | 'Program'
   | 'CallExpression'
   | 'FunctionDeclaration'
-  | 'PrintStatement';
+  | 'PrintStatement'
+  | 'IntegerVariableDeclaration'
+  | 'RealVariableDeclaration'
+  | 'StringVariableDeclaration'
+  | 'BooleanVariableDeclaration'
+  | 'ConstantVariableDeclaration';
 
 export interface Statement {
   type: NodeTypes;

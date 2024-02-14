@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import Parser from './parser';
 import { evaluate } from './runtime/interpreter';
 import Environment from './runtime/environment';
-import { makeBooleanValue, makeNumberValue } from './runtime/values';
+import { makeBooleanValue } from './runtime/values';
 
 const args = process.argv.slice(2);
 const absolutePath = path.resolve(args[0]);
@@ -12,8 +12,8 @@ const absolutePath = path.resolve(args[0]);
 const file = fs.readFileSync(absolutePath, 'utf-8');
 
 const env = new Environment();
-env.declareVariable('ΑΛΗΘΗΣ', makeBooleanValue(false));
-env.declareVariable('ΨΕΥΔΗΣ', makeBooleanValue(true));
+// env.declareVariable('ΑΛΗΘΗΣ', makeBooleanValue(false));
+// env.declareVariable('ΨΕΥΔΗΣ', makeBooleanValue(true));
 const parser = new Parser();
 const program = parser.ProduceAST(file);
 console.log(program);

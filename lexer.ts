@@ -32,6 +32,8 @@ export enum TokenType {
   ElseIf,
   Else,
   EndIf,
+  Start,
+  Colon,
   EOF,
 }
 
@@ -58,6 +60,7 @@ const KEYWORDS = new Map<string, TokenType>([
   ['ΑΛΛΙΩΣ_ΑΝ', TokenType.ElseIf],
   ['ΑΛΛΙΩΣ', TokenType.Else],
   ['ΤΕΛΟΣ_ΑΝ', TokenType.EndIf],
+  ['ΑΡΧΗ', TokenType.Start],
 ]);
 
 export interface Token {
@@ -160,6 +163,9 @@ export function tokenize(input: string): Token[] {
       case '\n':
         tokens.push(makeToken(char, TokenType.EndOfLine, line, column));
         break;
+      case ':':
+        tokens.push(makeToken(char, TokenType.Colon, line, column));
+        break;
       case ' ':
         break;
       default:
@@ -224,7 +230,7 @@ export function tokenize(input: string): Token[] {
             );
           } else {
             tokens.push(
-              makeToken(charactersToBuild, TokenType.Number, line, column)
+              makeToken(charactersToBuild, TokenType.Integer, line, column)
             );
           }
         } else if (charactersToBuild[0].match(/[a-zA-ZΑ-Ω]/)) {
