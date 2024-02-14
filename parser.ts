@@ -285,6 +285,11 @@ export default class Parser {
           type: 'NumberLiteral',
           value: parseFloat(this.advance().value),
         } as NumericLiteral;
+      case TokenType.String:
+        return {
+          type: 'StringLiteral',
+          value: this.advance().value,
+        } as any;
       case TokenType.LParenthesis:
         this.advance();
         const expression = this.ParseExpression();

@@ -12,7 +12,8 @@ export type NodeTypes =
   | 'RealVariableDeclaration'
   | 'StringVariableDeclaration'
   | 'BooleanVariableDeclaration'
-  | 'ConstantVariableDeclaration';
+  | 'ConstantVariableDeclaration'
+  | 'StringLiteral';
 
 export interface Statement {
   type: NodeTypes;
@@ -40,6 +41,11 @@ export interface Identifier extends Expression {
 export interface NumericLiteral extends Expression {
   type: 'NumberLiteral';
   value: number;
+}
+
+export interface StringLiteral extends Expression {
+  type: 'StringLiteral';
+  value: string;
 }
 
 export interface AssignmentExpression extends Statement {
