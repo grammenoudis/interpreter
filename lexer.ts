@@ -2,6 +2,10 @@ import * as fs from 'fs';
 
 export enum TokenType {
   Number,
+  String,
+  RealNumber,
+  Integer,
+  Boolean,
   BinaryOperator,
   LParenthesis,
   RParenthesis,
@@ -20,7 +24,14 @@ export enum TokenType {
   RealNumbers,
   Alphanumericals,
   Booleans,
-
+  Integers,
+  And,
+  Or,
+  If,
+  Then,
+  ElseIf,
+  Else,
+  EndIf,
   EOF,
 }
 
@@ -39,6 +50,14 @@ const KEYWORDS = new Map<string, TokenType>([
   ['ΠΡΑΓΜΑΤΙΚΕΣ', TokenType.RealNumbers],
   ['ΧΑΡΑΚΤΗΡΕΣ', TokenType.Alphanumericals],
   ['ΛΟΓΙΚΕΣ', TokenType.Booleans],
+  ['ΑΚΕΡΑΙΕΣ', TokenType.Integers],
+  ['ΚΑΙ', TokenType.And],
+  ['Ή', TokenType.Or],
+  ['ΑΝ', TokenType.If],
+  ['ΤΟΤΕ', TokenType.Then],
+  ['ΑΛΛΙΩΣ_ΑΝ', TokenType.ElseIf],
+  ['ΑΛΛΙΩΣ', TokenType.Else],
+  ['ΤΕΛΟΣ_ΑΝ', TokenType.EndIf],
 ]);
 
 export interface Token {
@@ -133,48 +152,69 @@ export function tokenize(input: string): Token[] {
       case ',':
         tokens.push(makeToken(char, TokenType.Seperator, line, column));
         break;
-      case "'":
-        tokens.push(makeToken(char, TokenType.Apostrophe, line, column));
+      case 'Ή':
+        tokens.push(makeToken('Ή', TokenType.Or, line, column));
         break;
       case '\n':
         tokens.push(makeToken(char, TokenType.EndOfLine, line, column));
         break;
+      case ' ':
+        break;
       default:
-        if (char.match(/[0-9]/)) {
-          let number = char;
-          while (src[0]?.match(/[0-9]/)) {
-            number += src.shift();
+        let charactersToBuild: string = char;
+        let isExpectingString: boolean = char == `'`;
+
+        if (isExpectingString) {
+          while (!isWhitespace(src[0]) && src[0] !== '\n') {
+            charactersToBuild += src.shift();
+            console.log(charactersToBuild);
+            column++;
           }
-          tokens.push(makeToken(number, TokenType.Number, line, column));
-        } else if (
-          char.match(/[a-zA-ZΑ-Ω]/) ||
-          char.match(/[0-9]/) ||
-          char.match(/_/)
-        ) {
-          let identifier = char;
+        } else {
           while (
-            src[0]?.match(/[a-zA-ZΑ-Ω]/) ||
-            src[0]?.match(/[0-9]/) ||
-            src[0]?.match(/_/)
+            src[0].match(/[a-zA-ZΑ-Ω0-9.]/) &&
+            !isWhitespace(src[0]) &&
+            src[0] !== '\n'
           ) {
-            //check if the word is a keyword. If the next character is a space and the word that has been built is a keyword, then break
-            if (KEYWORDS.get(identifier) !== undefined && src[1] != ' ') break;
-            identifier += src.shift();
+            charactersToBuild += src.shift();
+            column++;
           }
-          const reserved = KEYWORDS.get(identifier);
-          if (typeof reserved != 'number') {
+        }
+
+        // if (src[0] != '\n') {
+        //   src.shift();
+        // }
+        let reserved = KEYWORDS.get(charactersToBuild);
+        if (reserved !== undefined) {
+          tokens.push(
+            makeToken(charactersToBuild, reserved as TokenType, line, column)
+          );
+        } else if (charactersToBuild[0] === "'") {
+          if (charactersToBuild[charactersToBuild.length - 1] !== "'") {
+            console.error(`Λάθος στην γραμμή ${line}, στήλη ${column}`);
+            process.exit(1);
+          }
+          charactersToBuild = charactersToBuild.slice(
+            1,
+            charactersToBuild.length - 1
+          );
+          tokens.push(
+            makeToken(charactersToBuild, TokenType.String, line, column)
+          );
+        } else if (!isNaN(charactersToBuild as string as any)) {
+          if (charactersToBuild.includes('.')) {
             tokens.push(
-              makeToken(identifier, TokenType.Identifier, line, column)
+              makeToken(charactersToBuild, TokenType.RealNumber, line, column)
             );
-            column += identifier.length - 2;
           } else {
             tokens.push(
-              makeToken(identifier, reserved as TokenType, line, column)
+              makeToken(charactersToBuild, TokenType.Number, line, column)
             );
-            column += identifier.length - 1;
           }
-        } else if (isWhitespace(char)) {
-          column++;
+        } else if (charactersToBuild[0].match(/[a-zA-ZΑ-Ω]/)) {
+          tokens.push(
+            makeToken(charactersToBuild, TokenType.Identifier, line, column)
+          );
         } else {
           console.error(
             `Αγνωστος χαρακτήρας: '${char}' στην γραμμή ${line}, στήλη ${column}`
@@ -182,6 +222,47 @@ export function tokenize(input: string): Token[] {
           process.exit(1);
         }
     }
+    // if (char.match(/[0-9]/)) {
+    //   let number = char;
+    //   while (src[0]?.match(/[0-9]/)) {
+    //     number += src.shift();
+    //   }
+    //   tokens.push(makeToken(number, TokenType.Number, line, column));
+    // } else if (
+    //   char.match(/[a-zA-ZΑ-Ω]/) ||
+    //   char.match(/[0-9]/) ||
+    //   char.match(/_/)
+    // ) {
+    //   let identifier = char;
+    //   while (
+    //     src[0]?.match(/[a-zA-ZΑ-Ω]/) ||
+    //     src[0]?.match(/[0-9]/) ||
+    //     src[0]?.match(/_/)
+    //   ) {
+    //     //check if the word is a keyword. If the next character is a space and the word that has been built is a keyword, then break
+    //     if (KEYWORDS.get(identifier) !== undefined && src[1] != ' ') break;
+    //     identifier += src.shift();
+    //   }
+    //   const reserved = KEYWORDS.get(identifier);
+    //   if (typeof reserved != 'number') {
+    //     tokens.push(
+    //       makeToken(identifier, TokenType.Identifier, line, column)
+    //     );
+    //     column += identifier.length - 2;
+    //   } else {
+    //     tokens.push(
+    //       makeToken(identifier, reserved as TokenType, line, column)
+    //     );
+    //     column += identifier.length - 1;
+    //   }
+    // } else if (isWhitespace(char)) {
+    //   column++;
+    // } else {
+    //   console.error(
+    //     `Αγνωστος χαρακτήρας: '${char}' στην γραμμή ${line}, στήλη ${column}`
+    //   );
+    //   process.exit(1);
+    // }
     column++;
     if (char === '\n') {
       line++;

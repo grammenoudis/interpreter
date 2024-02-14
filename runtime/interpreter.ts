@@ -132,7 +132,7 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
         stringToPrint = stringToPrint + evaluate(statement, env).value + ' ';
       }
       outputList.push(stringToPrint);
-      return outputList as any;
+      return { type: 'string', value: stringToPrint } as RuntimeValue;
 
     default:
       console.error(`Unknown AST node type: ${(ASTnode as any).type}`);
