@@ -142,7 +142,9 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
     case 'PrintStatement':
       let stringToPrint = '';
       for (const statement of (ASTnode as any).value) {
-        stringToPrint = stringToPrint + evaluate(statement, env).value + ' ';
+        let res = evaluate(statement, env);
+        if (res.type == 'Boolean') res.value = res.value ? 'ΑΛΗΘΗΣ' : 'ΨΕΥΔΗΣ';
+        stringToPrint = stringToPrint + res.value + ' ';
       }
       outputList.push(stringToPrint);
       return { type: 'String', value: stringToPrint } as RuntimeValue;
