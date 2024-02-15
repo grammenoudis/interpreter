@@ -14,11 +14,22 @@ export default class Environment {
   }
 
   public declareVariable(name: string, type: string): void {
+    if (this.variables.has(name)) {
+      console.error(`Variable ${name} already declared`);
+      process.exit(1);
+    } else if (this.constants.has(name)) {
+      console.error(`Constant ${name} already declared`);
+      process.exit(1);
+    }
     this.variableTypes.set(name, type);
     return;
   }
 
   public declareConstant(name: string, value: RuntimeValue): void {
+    if (this.constants.has(name)) {
+      console.error(`Constant ${name} already declared`);
+      process.exit(1);
+    }
     this.constants.set(name, value);
     return;
   }
@@ -36,7 +47,6 @@ export default class Environment {
       return this;
     }
     if (this.constants.has(variableName)) {
-      console.log(variableName);
       return this;
     }
     if (this.parent) {
@@ -47,7 +57,6 @@ export default class Environment {
 
   public lookUpVariable(name: string): RuntimeValue {
     const env = this.resolve(name);
-    // return env.variables.get(name) as RuntimeValue;
     if (env.variables.has(name)) {
       return env.variables.get(name) as RuntimeValue;
     } else if (env.constants.has(name)) {

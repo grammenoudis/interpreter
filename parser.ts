@@ -59,7 +59,6 @@ export default class Parser {
         process.exit(1);
       }
       let name = this.advance().value;
-      console.log(name + 'test');
       this.expect(TokenType.EqualSign, 'Expected Equal sign');
       let value = this.ParseExpression();
       constantsToDeclare.push({

@@ -54,6 +54,12 @@ export function evaluateBinaryExpression(
     case '*':
       return { type: 'number', value: left.value * right.value } as NumberValue;
     case '/':
+      if (right.value === 0) {
+        console.error(
+          `Η διαίρεση με το μηδέν δεν επιτρέπεται (${left.value} / ${right.value})`
+        );
+        process.exit(1);
+      }
       return { type: 'number', value: left.value / right.value } as NumberValue;
     case '^':
       return {
@@ -162,7 +168,6 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       return {} as NumberValue;
     case 'ConstantVariableDeclaration':
       for (const variable of (ASTnode as any).value) {
-        console.table(variable);
         env.declareConstant(variable.name, evaluate(variable.value, env));
       }
       return {} as NumberValue;

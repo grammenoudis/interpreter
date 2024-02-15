@@ -16,7 +16,7 @@ env.declareVariable('ΑΛΗΘΗΣ', 'Boolean');
 env.declareVariable('ΨΕΥΔΗΣ', 'Boolean');
 const parser = new Parser();
 const program = parser.ProduceAST(file);
-console.log(program);
+console.log(JSON.stringify(program, null, 2));
 
 const res = evaluate(program, env) as any;
 

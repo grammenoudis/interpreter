@@ -182,7 +182,6 @@ export function tokenize(input: string): Token[] {
         if (isExpectingString) {
           while (src[0] !== '\n') {
             charactersToBuild += src.shift();
-            console.log(charactersToBuild);
             column++;
           }
         } else {

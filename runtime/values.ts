@@ -16,10 +16,6 @@ export interface NumberValue extends RuntimeValue {
   value: number;
 }
 
-// export function makeNumberValue(value: number): NumberValue {
-//   return { type: 'number', value };
-// }
-
 export function makeIntegerValue(value: number): NumberValue {
   return { type: 'Integer', value };
 }
