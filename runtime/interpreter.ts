@@ -27,6 +27,19 @@ export function evaluateBinaryExpression(
   const left = evaluate(BinOp.left, env);
   const right = evaluate(BinOp.right, env);
 
+  switch (BinOp.operator) {
+    case '<':
+      return { type: 'number', value: left.value < right.value } as any;
+    case '>':
+      return { type: 'number', value: left.value > right.value } as any;
+    case '<=':
+      return { type: 'number', value: left.value <= right.value } as any;
+    case '>=':
+      return { type: 'number', value: left.value >= right.value } as any;
+    case '<>':
+      return { type: 'number', value: left.value !== right.value } as any;
+  }
+
   if (typeof left.value !== 'number' || typeof right.value !== 'number') {
     console.error(
       `Expected number, got ${typeof left.value} and ${typeof right.value}`
@@ -54,16 +67,6 @@ export function evaluateBinaryExpression(
         type: 'number',
         value: Math.floor(left.value / right.value),
       } as NumberValue;
-    case '<':
-      return { type: 'number', value: left.value < right.value } as any;
-    case '>':
-      return { type: 'number', value: left.value > right.value } as any;
-    case '<=':
-      return { type: 'number', value: left.value <= right.value } as any;
-    case '>=':
-      return { type: 'number', value: left.value >= right.value } as any;
-    case '<>':
-      return { type: 'number', value: left.value !== right.value } as any;
     default:
       console.error(`Unknown operator: ${BinOp.operator}`);
       process.exit(1);
@@ -155,6 +158,12 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
     case 'BooleanVariableDeclaration':
       for (const variable of (ASTnode as any).value) {
         env.declareVariable(variable.name, 'Boolean');
+      }
+      return {} as NumberValue;
+    case 'ConstantVariableDeclaration':
+      for (const variable of (ASTnode as any).value) {
+        console.table(variable);
+        env.declareConstant(variable.name, evaluate(variable.value, env));
       }
       return {} as NumberValue;
     default:

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 
 export enum TokenType {
+  EqualSign,
   Number,
   String,
   RealNumber,
@@ -34,6 +35,7 @@ export enum TokenType {
   EndIf,
   Start,
   Colon,
+  EndOfProgram,
   EOF,
 }
 
@@ -61,6 +63,7 @@ const KEYWORDS = new Map<string, TokenType>([
   ['ΑΛΛΙΩΣ', TokenType.Else],
   ['ΤΕΛΟΣ_ΑΝ', TokenType.EndIf],
   ['ΑΡΧΗ', TokenType.Start],
+  ['ΤΕΛΟΣ_ΠΡΟΓΡΑΜΜΑΤΟΣ', TokenType.EndOfProgram],
 ]);
 
 export interface Token {
@@ -125,6 +128,9 @@ export function tokenize(input: string): Token[] {
       case ')':
         tokens.push(makeToken(char, TokenType.RParenthesis, line, column));
         break;
+      case '=':
+        tokens.push(makeToken(char, TokenType.EqualSign, line, column));
+        break;
       case '+':
       case '-':
       case '*':
@@ -181,8 +187,9 @@ export function tokenize(input: string): Token[] {
           }
         } else {
           while (
-            (src[0].match(/[a-zA-ZΑ-Ω0-9.]/) || src[0] == '[') &&
-            src[0] !== '\n'
+            src[0].match(/[a-zA-ZΑ-Ωα-ω0-9.]/) ||
+            src[0] === '[' ||
+            src[0] === '_'
           ) {
             if (src[0] === '[') {
               src.shift();
@@ -233,7 +240,7 @@ export function tokenize(input: string): Token[] {
               makeToken(charactersToBuild, TokenType.Integer, line, column)
             );
           }
-        } else if (charactersToBuild[0].match(/[a-zA-ZΑ-Ω]/)) {
+        } else if (charactersToBuild[0].match(/[a-zA-ZΑ-Ωα-ω]/)) {
           if (arrayCell) {
             tokens.push(
               makeToken(

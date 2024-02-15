@@ -51,26 +51,40 @@ export default class Parser {
     return this.ParseExpression();
   }
 
+  private ParseDeclarationOfConstants(): Statement {
+    let constantsToDeclare: Identifier[] = [];
+    while (this.at().type != TokenType.Variables) {
+      if (this.at().type != TokenType.Identifier) {
+        console.error('Expected identifier', this.at());
+        process.exit(1);
+      }
+      let name = this.advance().value;
+      console.log(name + 'test');
+      this.expect(TokenType.EqualSign, 'Expected Equal sign');
+      let value = this.ParseExpression();
+      constantsToDeclare.push({
+        type: 'Identifier',
+        name: name,
+        value: value,
+      } as Identifier);
+      if (this.at().type != TokenType.EndOfLine) {
+        console.error('Expected end of line', this.at());
+      }
+      this.advance();
+    }
+    return {
+      type: 'ConstantVariableDeclaration',
+      value: constantsToDeclare,
+    } as Statement;
+  }
+
   private ParseDeclarationOfVariables(): Statement {
     let variablesToDeclare: Identifier[] = [];
-    console.log('Type of variables', this.at().value, this.tokens[1].value);
     let typeOfVariables = this.advance().type;
-    this.expect(TokenType.Colon, 'Expected colon');
+    if (typeOfVariables !== TokenType.Constants)
+      this.expect(TokenType.Colon, 'Expected colon');
+    else this.expect(TokenType.EndOfLine, 'Expected end of line');
     switch (typeOfVariables) {
-      case TokenType.Constants:
-        while (this.at().type != TokenType.EndOfLine) {
-          variablesToDeclare.push({
-            type: 'Identifier',
-            name: this.advance().value,
-          } as Identifier);
-          if (this.at().type == TokenType.EndOfLine) break;
-          this.expect(TokenType.Seperator, 'Expected comma');
-        }
-        this.expect(TokenType.EndOfLine, 'Expected end of line');
-        return {
-          type: 'ConstantVariableDeclaration',
-          value: variablesToDeclare,
-        } as Statement;
       case TokenType.Integers:
         while (this.at().type != TokenType.EndOfLine) {
           if (this.at().type != TokenType.Identifier) {
@@ -309,6 +323,10 @@ export default class Parser {
         return expression;
       case TokenType.Print:
         return this.ParsePrintStatement();
+      case TokenType.Constants:
+        this.advance();
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
+        return this.ParseDeclarationOfConstants();
       case TokenType.Variables:
         this.advance();
         this.expect(TokenType.EndOfLine, 'Expected end of line');
@@ -316,7 +334,6 @@ export default class Parser {
       case TokenType.Integers:
       case TokenType.RealNumbers:
       case TokenType.Booleans:
-      case TokenType.Constants:
       case TokenType.Alphanumericals:
         return this.ParseDeclarationOfVariables();
       case TokenType.Start:
