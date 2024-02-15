@@ -12,8 +12,8 @@ const absolutePath = path.resolve(args[0]);
 const file = fs.readFileSync(absolutePath, 'utf-8');
 
 const env = new Environment();
-// env.declareVariable('ΑΛΗΘΗΣ', makeBooleanValue(false));
-// env.declareVariable('ΨΕΥΔΗΣ', makeBooleanValue(true));
+env.declareVariable('ΑΛΗΘΗΣ', 'Boolean');
+env.declareVariable('ΨΕΥΔΗΣ', 'Boolean');
 const parser = new Parser();
 const program = parser.ProduceAST(file);
 console.log(program);

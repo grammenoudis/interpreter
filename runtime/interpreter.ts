@@ -104,6 +104,8 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       } as NumberValue;
     case 'StringLiteral':
       return { type: 'String', value: (ASTnode as any).value } as RuntimeValue;
+    case 'BooleanLiteral':
+      return { type: 'Boolean', value: (ASTnode as any).value } as RuntimeValue;
     case 'BinaryExpression':
       return evaluateBinaryExpression(ASTnode as BinaryExpression, env);
     case 'Program':
@@ -148,6 +150,11 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
     case 'StringVariableDeclaration':
       for (const variable of (ASTnode as any).value) {
         env.declareVariable(variable.name, 'String');
+      }
+      return {} as NumberValue;
+    case 'BooleanVariableDeclaration':
+      for (const variable of (ASTnode as any).value) {
+        env.declareVariable(variable.name, 'Boolean');
       }
       return {} as NumberValue;
     default:

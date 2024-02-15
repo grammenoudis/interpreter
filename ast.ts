@@ -13,7 +13,8 @@ export type NodeTypes =
   | 'StringVariableDeclaration'
   | 'BooleanVariableDeclaration'
   | 'ConstantVariableDeclaration'
-  | 'StringLiteral';
+  | 'StringLiteral'
+  | 'BooleanLiteral';
 
 export interface Statement {
   type: NodeTypes;
@@ -58,4 +59,9 @@ export interface UnaryExpression extends Expression {
   type: 'UnaryExpression';
   operator: string;
   right: Expression;
+}
+
+export interface BooleanLiteral extends Expression {
+  type: 'BooleanLiteral';
+  value: boolean;
 }

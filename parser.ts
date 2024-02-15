@@ -53,9 +53,24 @@ export default class Parser {
 
   private ParseDeclarationOfVariables(): Statement {
     let variablesToDeclare: Identifier[] = [];
+    console.log('Type of variables', this.at().value, this.tokens[1].value);
     let typeOfVariables = this.advance().type;
     this.expect(TokenType.Colon, 'Expected colon');
     switch (typeOfVariables) {
+      case TokenType.Constants:
+        while (this.at().type != TokenType.EndOfLine) {
+          variablesToDeclare.push({
+            type: 'Identifier',
+            name: this.advance().value,
+          } as Identifier);
+          if (this.at().type == TokenType.EndOfLine) break;
+          this.expect(TokenType.Seperator, 'Expected comma');
+        }
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
+        return {
+          type: 'ConstantVariableDeclaration',
+          value: variablesToDeclare,
+        } as Statement;
       case TokenType.Integers:
         while (this.at().type != TokenType.EndOfLine) {
           if (this.at().type != TokenType.Identifier) {
@@ -89,34 +104,6 @@ export default class Parser {
           type: 'RealVariableDeclaration',
           value: variablesToDeclare,
         } as Statement;
-      case TokenType.Booleans:
-        while (this.at().type != TokenType.EndOfLine) {
-          variablesToDeclare.push({
-            type: 'Identifier',
-            name: this.advance().value,
-          } as Identifier);
-          if (this.at().type == TokenType.EndOfLine) break;
-          this.expect(TokenType.Seperator, 'Expected comma');
-        }
-        this.expect(TokenType.EndOfLine, 'Expected end of line');
-        return {
-          type: 'BooleanVariableDeclaration',
-          value: variablesToDeclare,
-        } as Statement;
-      case TokenType.Constants:
-        while (this.at().type != TokenType.EndOfLine) {
-          variablesToDeclare.push({
-            type: 'Identifier',
-            name: this.advance().value,
-          } as Identifier);
-          if (this.at().type == TokenType.EndOfLine) break;
-          this.expect(TokenType.Seperator, 'Expected comma');
-        }
-        this.expect(TokenType.EndOfLine, 'Expected end of line');
-        return {
-          type: 'ConstantVariableDeclaration',
-          value: variablesToDeclare,
-        } as Statement;
       case TokenType.Alphanumericals:
         while (this.at().type != TokenType.EndOfLine) {
           variablesToDeclare.push({
@@ -129,6 +116,20 @@ export default class Parser {
         this.expect(TokenType.EndOfLine, 'Expected end of line');
         return {
           type: 'StringVariableDeclaration',
+          value: variablesToDeclare,
+        } as Statement;
+      case TokenType.Booleans:
+        while (this.at().type != TokenType.EndOfLine) {
+          variablesToDeclare.push({
+            type: 'Identifier',
+            name: this.advance().value,
+          } as Identifier);
+          if (this.at().type == TokenType.EndOfLine) break;
+          this.expect(TokenType.Seperator, 'Expected comma');
+        }
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
+        return {
+          type: 'BooleanVariableDeclaration',
           value: variablesToDeclare,
         } as Statement;
       default:
@@ -285,6 +286,11 @@ export default class Parser {
           type: 'NumberLiteral',
           value: parseFloat(this.advance().value),
         } as NumericLiteral;
+      case TokenType.Boolean:
+        return {
+          type: 'BooleanLiteral',
+          value: this.advance().value == 'ΑΛΗΘΗΣ' ? true : false,
+        } as any;
       case TokenType.String:
         return {
           type: 'StringLiteral',
