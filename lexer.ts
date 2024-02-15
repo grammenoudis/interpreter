@@ -180,7 +180,7 @@ export function tokenize(input: string): Token[] {
         let arrayCell = '';
 
         if (isExpectingString) {
-          while (!isWhitespace(src[0]) && src[0] !== '\n') {
+          while (src[0] !== '\n') {
             charactersToBuild += src.shift();
             console.log(charactersToBuild);
             column++;

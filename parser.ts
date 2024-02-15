@@ -40,7 +40,7 @@ export default class Parser {
       body: [],
     };
 
-    while (this.NotEOF()) {
+    while (this.at().type != TokenType.EndOfProgram) {
       program.body.push(this.ParseStatement());
     }
 
@@ -340,6 +340,10 @@ export default class Parser {
         this.advance();
         this.expect(TokenType.EndOfLine, 'Expected end of line');
         return this.ParseStatement();
+      case TokenType.EndOfProgram:
+        this.advance();
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
+      // return this.ParseStatement();
       default:
         console.error('Unexpected token', this.at());
         process.exit(1);
