@@ -31,15 +31,15 @@ export function evaluateBinaryExpression(
 
   switch (BinOp.operator) {
     case '<':
-      return { type: 'number', value: left.value < right.value } as any;
+      return { type: 'Boolean', value: left.value < right.value } as any;
     case '>':
-      return { type: 'number', value: left.value > right.value } as any;
+      return { type: 'Boolean', value: left.value > right.value } as any;
     case '<=':
-      return { type: 'number', value: left.value <= right.value } as any;
+      return { type: 'Boolean', value: left.value <= right.value } as any;
     case '>=':
-      return { type: 'number', value: left.value >= right.value } as any;
+      return { type: 'Boolean', value: left.value >= right.value } as any;
     case '<>':
-      return { type: 'number', value: left.value !== right.value } as any;
+      return { type: 'Boolean', value: left.value !== right.value } as any;
   }
 
   if (typeof left.value !== 'number' || typeof right.value !== 'number') {
