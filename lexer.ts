@@ -114,7 +114,7 @@ export function tokenize(input: string): Token[] | string {
     return errorMessage;
   }
 
-  let line: number = 1;
+  let line: number = 2;
   let column: number = 0;
   while (src.length > 0 && !errorMessage) {
     const char = src.shift()!;
@@ -255,7 +255,10 @@ export function tokenize(input: string): Token[] | string {
               makeToken(charactersToBuild, TokenType.Identifier, line, column)
             );
         } else {
-          errorMessage = `Αγνωστος χαρακτήρας: '${char}' στην γραμμή ${line}, στήλη ${column}`;
+          if (char === '"')
+            errorMessage = `Στην γραμμή ${line}, στήλη ${column}, χρησιμοποίησε απόστροφο αντί για εισαγωγικά`;
+          else
+            errorMessage = `Αγνωστος χαρακτήρας: '${char}' στην γραμμή ${line}, στήλη ${column}`;
         }
     }
     column++;
