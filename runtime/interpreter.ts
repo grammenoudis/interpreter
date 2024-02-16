@@ -11,11 +11,13 @@ import {
 import Environment from './environment';
 
 var outputList: any = [];
+var errorMessage: string | undefined;
 
 function evaluateProgram(program: Program, env: Environment): any {
   // let lastEvaluated: RuntimeValue = { type: 'number', value: 0 } as NumberValue;
   for (const statement of program.body) {
     evaluate(statement, env);
+    if (errorMessage) return errorMessage;
     // console.log(lastEvaluated);
   }
   return outputList;
@@ -41,10 +43,8 @@ export function evaluateBinaryExpression(
   }
 
   if (typeof left.value !== 'number' || typeof right.value !== 'number') {
-    console.error(
-      `Expected number, got ${typeof left.value} and ${typeof right.value}`
-    );
-    process.exit(1);
+    errorMessage = `Expected number, got ${typeof left.value} and ${typeof right.value}`;
+    return {} as NumberValue;
   }
   switch (BinOp.operator) {
     case '+':
@@ -55,10 +55,7 @@ export function evaluateBinaryExpression(
       return { type: 'number', value: left.value * right.value } as NumberValue;
     case '/':
       if (right.value === 0) {
-        console.error(
-          `Η διαίρεση με το μηδέν δεν επιτρέπεται (${left.value} / ${right.value})`
-        );
-        process.exit(1);
+        errorMessage = `Η διαίρεση με το μηδέν δεν επιτρέπεται (${left.value} / ${right.value})`;
       }
       return { type: 'number', value: left.value / right.value } as NumberValue;
     case '^':
@@ -85,8 +82,7 @@ function evaluateIdentifier(
 ): RuntimeValue {
   const value = env.lookUpVariable(ASTnode.name);
   if (value === undefined) {
-    console.error(`Undefined variable: ${ASTnode.name}`);
-    process.exit(1);
+    errorMessage = `Undefined variable: ${ASTnode.name}`;
   }
   return value;
 }
@@ -174,7 +170,7 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       }
       return {} as NumberValue;
     default:
-      console.error(`Unknown AST node type: ${(ASTnode as any).type}`);
+      errorMessage = `Unknown AST node type: ${(ASTnode as any).type}`;
       process.exit(1);
   }
 }

@@ -9,6 +9,7 @@ import {
 } from './ast';
 
 import { Token, TokenType, tokenize } from './lexer';
+var errorMessage: string | undefined;
 
 export default class Parser {
   private tokens: Token[] = [];
@@ -27,22 +28,27 @@ export default class Parser {
   private expect(type: TokenType, error: string): Token {
     const token = this.tokens.shift()!;
     if (token.type != type || !token) {
-      console.error(error, token);
-      process.exit(1);
+      errorMessage = error;
     }
     return token;
   }
 
-  public ProduceAST(source: string): Program {
-    this.tokens = tokenize(source);
+  public ProduceAST(source: string): Program | string {
+    let lexerResponse = tokenize(source);
+    if (typeof lexerResponse === 'string') {
+      return lexerResponse;
+    }
+
+    this.tokens = lexerResponse;
     const program: Program = {
       type: 'Program',
       body: [],
     };
 
-    while (this.at().type != TokenType.EndOfProgram) {
+    while (this.at().type != TokenType.EndOfProgram && !errorMessage) {
       program.body.push(this.ParseStatement());
     }
+    if (errorMessage) return errorMessage;
 
     return program;
   }
@@ -55,8 +61,7 @@ export default class Parser {
     let constantsToDeclare: Identifier[] = [];
     while (this.at().type != TokenType.Variables) {
       if (this.at().type != TokenType.Identifier) {
-        console.error('Expected identifier', this.at());
-        process.exit(1);
+        errorMessage = 'Expected identifier';
       }
       let name = this.advance().value;
       this.expect(TokenType.EqualSign, 'Expected Equal sign');
@@ -67,7 +72,9 @@ export default class Parser {
         value: value,
       } as Identifier);
       if (this.at().type != TokenType.EndOfLine) {
-        console.error('Expected end of line', this.at());
+        errorMessage = `Expected end of line near line ${
+          this.at().line
+        } column ${this.at().column}`;
       }
       this.advance();
     }
@@ -87,8 +94,9 @@ export default class Parser {
       case TokenType.Integers:
         while (this.at().type != TokenType.EndOfLine) {
           if (this.at().type != TokenType.Identifier) {
-            console.error('Expected identifier', this.at());
-            process.exit(1);
+            errorMessage = `Expected identifier near line ${
+              this.at().line
+            } column ${this.at().column}`;
           }
           variablesToDeclare.push({
             type: 'Identifier',
@@ -98,7 +106,6 @@ export default class Parser {
           this.expect(TokenType.Seperator, 'Expected comma');
         }
         this.expect(TokenType.EndOfLine, 'Expected end of line');
-        console.log('Variables to declare', variablesToDeclare);
         return {
           type: 'IntegerVariableDeclaration',
           value: variablesToDeclare,
@@ -146,8 +153,10 @@ export default class Parser {
           value: variablesToDeclare,
         } as Statement;
       default:
-        console.error('Unexpected token', this.at());
-        process.exit(1);
+        errorMessage = `Unexpected token ${this.at().value} at line ${
+          this.at().line
+        } column ${this.at().column}`;
+        return {} as Statement;
     }
   }
 
@@ -187,8 +196,9 @@ export default class Parser {
 
     const newLine = this.tokens.shift();
     if (newLine?.type != TokenType.EndOfLine && newLine?.value != 'EOF') {
-      console.error('Expected end of line', newLine);
-      process.exit(1);
+      errorMessage = `Expected end of line near line ${this.at().line} column ${
+        this.at().column
+      }`;
     }
 
     return {
@@ -344,8 +354,10 @@ export default class Parser {
         this.expect(TokenType.EndOfLine, 'Expected end of line');
       // return this.ParseStatement();
       default:
-        console.error('Unexpected token', this.at());
-        process.exit(1);
+        errorMessage = `Unexpected token ${this.at().value} at line ${
+          this.at().line
+        } column ${this.at().column}`;
+        return {} as Expression;
     }
   }
 }

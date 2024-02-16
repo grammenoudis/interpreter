@@ -16,12 +16,22 @@ env.declareVariable('ΑΛΗΘΗΣ', 'Boolean');
 env.declareVariable('ΨΕΥΔΗΣ', 'Boolean');
 const parser = new Parser();
 const program = parser.ProduceAST(file);
-console.log(JSON.stringify(program, null, 2));
 
-const res = evaluate(program, env) as any;
-
-for (const print of res) {
-  fs.writeFileSync('output.txt', print + '\n', { flag: 'a' });
+var errorMessage: string | undefined;
+var res;
+if (typeof program === 'string') {
+  errorMessage = program;
+} else {
+  console.log(JSON.stringify(program, null, 2));
+  res = evaluate(program, env) as any;
+  if (typeof res === 'string') {
+    errorMessage = res;
+  } else {
+    for (const print of res) {
+      fs.writeFileSync('output.txt', print + '\n', { flag: 'a' });
+    }
+  }
 }
 
 console.table(res);
+console.log(errorMessage);

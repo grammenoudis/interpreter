@@ -89,6 +89,8 @@ function isWhitespace(char: string): boolean {
   return char.match(/[ \t]/) !== null;
 }
 
+var errorMessage: string | void;
+
 function expectTemplate(src: string[]): string | void {
   let programmaKeyword = src.splice(0, 9);
   if (programmaKeyword.join('') !== 'ΠΡΟΓΡΑΜΜΑ') {
@@ -108,18 +110,18 @@ function expectTemplate(src: string[]): string | void {
   //remove newline character
   src.shift();
 }
-export function tokenize(input: string): Token[] {
+export function tokenize(input: string): Token[] | string {
   const tokens: Token[] = [];
   const src: string[] = input.split('');
   let error = expectTemplate(src);
   if (error) {
-    console.error(error);
-    process.exit(1);
+    errorMessage = error;
+    return errorMessage;
   }
 
   let line: number = 1;
   let column: number = 0;
-  while (src.length > 0) {
+  while (src.length > 0 && !errorMessage) {
     const char = src.shift()!;
     switch (char) {
       case '(':
@@ -167,6 +169,7 @@ export function tokenize(input: string): Token[] {
         tokens.push(makeToken('Ή', TokenType.Or, line, column));
         break;
       case '\n':
+        if (column === 1) break;
         tokens.push(makeToken(char, TokenType.EndOfLine, line, column));
         break;
       case ':':
@@ -219,8 +222,7 @@ export function tokenize(input: string): Token[] {
           );
         } else if (charactersToBuild[0] === "'") {
           if (charactersToBuild[charactersToBuild.length - 1] !== "'") {
-            console.error(`Λάθος στην γραμμή ${line}, στήλη ${column}`);
-            process.exit(1);
+            errorMessage = `Λάθος στην γραμμή ${line}, στήλη ${column}, δεν έχει κλείσει το απόστροφο`;
           }
           charactersToBuild = charactersToBuild.slice(
             1,
@@ -255,10 +257,7 @@ export function tokenize(input: string): Token[] {
               makeToken(charactersToBuild, TokenType.Identifier, line, column)
             );
         } else {
-          console.error(
-            `Αγνωστος χαρακτήρας: '${char}' στην γραμμή ${line}, στήλη ${column}`
-          );
-          process.exit(1);
+          errorMessage = `Αγνωστος χαρακτήρας: '${char}' στην γραμμή ${line}, στήλη ${column}`;
         }
     }
     column++;
@@ -269,5 +268,7 @@ export function tokenize(input: string): Token[] {
   }
   tokens.push(makeToken('EOF', TokenType.EOF, line, column));
   console.log(tokens);
+  if (errorMessage) return errorMessage;
+
   return tokens;
 }
