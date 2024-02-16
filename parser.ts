@@ -190,7 +190,7 @@ export default class Parser {
           return this.ParseAssignmentExpression();
         }
       default:
-        return this.ParseComparisonExpression();
+        return this.ParseOrExpression();
     }
   }
   ParseAssignmentExpression(): Statement {
@@ -212,6 +212,39 @@ export default class Parser {
       value: value,
     } as Statement;
   }
+
+  private ParseAndExpression(): Expression {
+    let left = this.ParseComparisonExpression();
+    while (this.at().value == 'ΚΑΙ') {
+      const operator = this.advance().value;
+      const right = this.ParseComparisonExpression();
+
+      left = {
+        type: 'BinaryExpression',
+        operator: operator,
+        left: left,
+        right: right,
+      } as BinaryExpression;
+    }
+    return left;
+  }
+
+  private ParseOrExpression(): Expression {
+    let left = this.ParseAndExpression();
+    while (this.at().value == 'Ή') {
+      const operator = this.advance().value;
+      const right = this.ParseAndExpression();
+
+      left = {
+        type: 'BinaryExpression',
+        operator: operator,
+        left: left,
+        right: right,
+      } as BinaryExpression;
+    }
+    return left;
+  }
+
   private ParseComparisonExpression(): Expression {
     let left = this.ParseAdditiveExpression();
     while (
@@ -354,6 +387,10 @@ export default class Parser {
         this.advance();
         this.expect(TokenType.EndOfLine, 'Expected end of line');
         return this.ParseStatement();
+      case TokenType.And:
+        return this.ParseAndExpression();
+      case TokenType.Or:
+        return this.ParseOrExpression();
       case TokenType.EndOfProgram:
         this.advance();
         this.expect(TokenType.EndOfLine, 'Expected end of line');
