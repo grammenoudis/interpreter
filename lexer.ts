@@ -1,5 +1,3 @@
-import * as fs from 'fs';
-
 export enum TokenType {
   EqualSign,
   Number,
@@ -38,9 +36,6 @@ export enum TokenType {
   EndOfProgram,
   EOF,
 }
-
-//clear the output file
-fs.writeFile('output.txt', '', function (err) {});
 
 const KEYWORDS = new Map<string, TokenType>([
   ['MOD', TokenType.Mod],
