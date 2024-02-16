@@ -40,6 +40,8 @@ export function evaluateBinaryExpression(
       return { type: 'Boolean', value: left.value >= right.value } as any;
     case '<>':
       return { type: 'Boolean', value: left.value !== right.value } as any;
+    case '=':
+      return { type: 'Boolean', value: left.value === right.value } as any;
   }
 
   if (typeof left.value !== 'number' || typeof right.value !== 'number') {
