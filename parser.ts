@@ -77,6 +77,7 @@ export default class Parser {
         } column ${this.at().column}`;
       }
       this.advance();
+      while (this.at().type == TokenType.EndOfLine) this.advance();
     }
     return {
       type: 'ConstantVariableDeclaration',
@@ -106,6 +107,7 @@ export default class Parser {
           this.expect(TokenType.Seperator, 'Expected comma');
         }
         this.expect(TokenType.EndOfLine, 'Expected end of line');
+        while (this.at().type == TokenType.EndOfLine) this.advance();
         return {
           type: 'IntegerVariableDeclaration',
           value: variablesToDeclare,
@@ -120,6 +122,7 @@ export default class Parser {
           this.expect(TokenType.Seperator, 'Expected comma');
         }
         this.expect(TokenType.EndOfLine, 'Expected end of line');
+        while (this.at().type == TokenType.EndOfLine) this.advance();
         return {
           type: 'RealVariableDeclaration',
           value: variablesToDeclare,
@@ -134,6 +137,7 @@ export default class Parser {
           this.expect(TokenType.Seperator, 'Expected comma');
         }
         this.expect(TokenType.EndOfLine, 'Expected end of line');
+        while (this.at().type == TokenType.EndOfLine) this.advance();
         return {
           type: 'StringVariableDeclaration',
           value: variablesToDeclare,
@@ -148,6 +152,7 @@ export default class Parser {
           this.expect(TokenType.Seperator, 'Expected comma');
         }
         this.expect(TokenType.EndOfLine, 'Expected end of line');
+        while (this.at().type == TokenType.EndOfLine) this.advance();
         return {
           type: 'BooleanVariableDeclaration',
           value: variablesToDeclare,

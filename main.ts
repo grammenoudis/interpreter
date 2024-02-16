@@ -25,7 +25,7 @@ export function run(isCli = false, src = '') {
     res = evaluate(program, env) as any;
     if (typeof res === 'string') {
       errorMessage = res;
-    } else {
+    } else if (isCli) {
       for (const print of res) {
         fs.writeFileSync('output.txt', print + '\n', { flag: 'a' });
       }
