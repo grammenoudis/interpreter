@@ -29,12 +29,13 @@ export function evaluateBinaryExpression(
   const left = evaluate(BinOp.left, env);
   const right = evaluate(BinOp.right, env);
 
-  switch (BinOp.operator) {
-    case 'ΚΑΙ':
-      return { type: 'Boolean', value: left.value && right.value } as any;
-    case 'Ή':
-      return { type: 'Boolean', value: left.value || right.value } as any;
-  }
+  if (left.type === 'Boolean' && right.type === 'Boolean')
+    switch (BinOp.operator) {
+      case 'ΚΑΙ':
+        return { type: 'Boolean', value: left.value && right.value } as any;
+      case 'Ή':
+        return { type: 'Boolean', value: left.value || right.value } as any;
+    }
 
   switch (BinOp.operator) {
     case '<':
