@@ -26,8 +26,8 @@ export function evaluateBinaryExpression(
   BinOp: BinaryExpression,
   env: Environment
 ): RuntimeValue {
-  const left = evaluate(BinOp.left, env);
   const right = evaluate(BinOp.right, env);
+  const left = evaluate(BinOp.left, env);
 
   if (left.type === 'Boolean' && right.type === 'Boolean')
     switch (BinOp.operator) {
@@ -139,11 +139,18 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
           type: 'number',
           value: -((ASTnode as any).right as RuntimeValue).value,
         } as NumberValue;
-      } else {
+      } else if ((ASTnode as any).operator === '+') {
         return {
           type: 'number',
           value: ((ASTnode as any).right as RuntimeValue).value,
         } as NumberValue;
+      } else {
+        console.table(ASTnode);
+        let res = evaluate((ASTnode as any).right, env);
+        return {
+          type: 'Boolean',
+          value: !res.value,
+        } as RuntimeValue;
       }
     case 'PrintStatement':
       let stringToPrint = '';

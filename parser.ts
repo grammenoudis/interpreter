@@ -213,22 +213,6 @@ export default class Parser {
     } as Statement;
   }
 
-  private ParseAndExpression(): Expression {
-    let left = this.ParseComparisonExpression();
-    while (this.at().value == 'ΚΑΙ') {
-      const operator = this.advance().value;
-      const right = this.ParseComparisonExpression();
-
-      left = {
-        type: 'BinaryExpression',
-        operator: operator,
-        left: left,
-        right: right,
-      } as BinaryExpression;
-    }
-    return left;
-  }
-
   private ParseOrExpression(): Expression {
     let left = this.ParseAndExpression();
     while (this.at().value == 'Ή') {
@@ -243,6 +227,35 @@ export default class Parser {
       } as BinaryExpression;
     }
     return left;
+  }
+
+  private ParseAndExpression(): Expression {
+    let left = this.ParseNotExpression();
+    while (this.at().value == 'ΚΑΙ') {
+      const operator = this.advance().value;
+      const right = this.ParseNotExpression();
+
+      left = {
+        type: 'BinaryExpression',
+        operator: operator,
+        left: left,
+        right: right,
+      } as BinaryExpression;
+    }
+    return left;
+  }
+
+  private ParseNotExpression(): Expression {
+    if (this.at().value == 'ΟΧΙ') {
+      const operator = this.advance().value;
+      const right = this.ParseComparisonExpression();
+      return {
+        type: 'UnaryExpression',
+        operator: operator,
+        right: right,
+      } as UnaryExpression;
+    }
+    return this.ParseComparisonExpression();
   }
 
   private ParseComparisonExpression(): Expression {
@@ -391,6 +404,8 @@ export default class Parser {
         return this.ParseAndExpression();
       case TokenType.Or:
         return this.ParseOrExpression();
+      case TokenType.Not:
+        return this.ParseNotExpression();
       case TokenType.EndOfProgram:
         this.advance();
         this.expect(TokenType.EndOfLine, 'Expected end of line');
