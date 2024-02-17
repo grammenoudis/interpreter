@@ -183,7 +183,11 @@ export function tokenize(input: string): Token[] | string {
         let arrayCell = '';
 
         if (isExpectingString) {
-          while (src[0] !== '\n') {
+          while (src[0] !== '\n' && src[0] !== "'") {
+            charactersToBuild += src.shift();
+            column++;
+          }
+          if (src[0] === `'`) {
             charactersToBuild += src.shift();
             column++;
           }
