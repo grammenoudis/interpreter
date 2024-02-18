@@ -48,7 +48,6 @@ export enum TokenType {
   Repeat,
   EOF,
 }
-
 const KEYWORDS = new Map<string, TokenType>([
   ['MOD', TokenType.Mod],
   ['DIV', TokenType.Div],

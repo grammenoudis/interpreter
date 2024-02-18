@@ -108,7 +108,6 @@ function evaluateIdentifierExpression(
 }
 
 function evaluateForStatement(ASTnode: any, env: Environment): RuntimeValue {
-  console.table(ASTnode.step.type);
   // if (
   //   ASTnode.identifier.type !== TokenType.Identifier ||
   //   ASTnode.start.type !== 'NumberLiteral' ||
@@ -129,7 +128,6 @@ function evaluateForStatement(ASTnode: any, env: Environment): RuntimeValue {
     return {} as NumberValue;
   }
   env.assignVariable(ASTnode.identifier.value, start);
-  console.table(start);
 
   let end = evaluate(ASTnode.end, env);
   if (end.type !== 'Integer' && end.type !== 'Real' && end.type !== 'number') {
@@ -137,7 +135,6 @@ function evaluateForStatement(ASTnode: any, env: Environment): RuntimeValue {
     return {} as NumberValue;
   }
   let step = evaluate(ASTnode.step, env);
-  console.log(step.type, step.value);
   if (
     step.type !== 'Integer' &&
     step.type !== 'Real' &&
@@ -152,8 +149,7 @@ function evaluateForStatement(ASTnode: any, env: Environment): RuntimeValue {
     return {} as NumberValue;
   }
 
-  while (start.value != (end.value as any)) {
-    console.log(start.value, end.value, step.value);
+  while (start.value != (end.value as any) + 1) {
     for (const statement of ASTnode.body) {
       evaluate(statement, env);
     }
