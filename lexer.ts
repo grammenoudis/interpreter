@@ -170,10 +170,6 @@ export function tokenize(input: string): Token[] | string {
         tokens.push(makeToken('Ή', TokenType.Or, line, column));
         break;
       case '\n':
-        if (src[1] == '\n' || column == 1) {
-          src.shift();
-          break;
-        }
         tokens.push(makeToken(char, TokenType.EndOfLine, line, column));
         break;
       case ':':

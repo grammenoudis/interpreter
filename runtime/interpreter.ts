@@ -118,7 +118,6 @@ function evaluateIfStatement(ASTnode: any, env: Environment): RuntimeValue {
     }
     return {} as NumberValue;
   } else if (ASTnode.alternate) {
-    console.log(ASTnode.alternate.type);
     if (ASTnode.alternate.type === 'IfStatement') {
       return evaluateIfStatement(ASTnode.alternate, env);
     }

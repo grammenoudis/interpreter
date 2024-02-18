@@ -71,9 +71,10 @@ export default class Parser {
   private ParseIfStatement(): Statement {
     this.advance();
     const condition = this.ParseExpression();
+    console.table(this.at());
     this.expect(TokenType.Then, 'Expected THEN');
     this.expect(TokenType.EndOfLine, 'Expected end of line');
-    while (this.at().type == TokenType.EndOfLine) this.advance();
+    // while (this.at().type == TokenType.EndOfLine) this.advance();
     var consequent: Statement[] = [];
     while (
       this.at().type != TokenType.Else &&
@@ -94,7 +95,7 @@ export default class Parser {
     if (this.at().type == TokenType.Else) {
       this.advance();
       this.expect(TokenType.EndOfLine, 'Expected end of line');
-      while (this.at().type == TokenType.EndOfLine) this.advance();
+      // while (this.at().type == TokenType.EndOfLine) this.advance();
       var alternate: Statement[] = [];
       while (
         this.at().type != TokenType.EndOfProgram &&
@@ -104,7 +105,7 @@ export default class Parser {
       }
       this.expect(TokenType.EndIf, 'Expected ENDIF');
       this.expect(TokenType.EndOfLine, 'Expected end of line');
-      while (this.at().type == TokenType.EndOfLine) this.advance();
+      // while (this.at().type == TokenType.EndOfLine) this.advance();
       return {
         type: 'IfStatement',
         condition: condition,
@@ -114,7 +115,7 @@ export default class Parser {
     }
     this.expect(TokenType.EndIf, 'Expected ENDIF');
     this.expect(TokenType.EndOfLine, 'Expected end of line');
-    while (this.at().type == TokenType.EndOfLine) this.advance();
+    // while (this.at().type == TokenType.EndOfLine) this.advance();
     return {
       type: 'IfStatement',
       condition: condition,
@@ -459,6 +460,9 @@ export default class Parser {
       case TokenType.EndOfProgram:
         this.advance();
         this.expect(TokenType.EndOfLine, 'Expected end of line');
+      case TokenType.EndOfLine:
+        this.advance();
+        return this.ParseStatement();
       default:
         errorMessage = `Unexpected token ${this.at().value} at line ${
           this.at().line
