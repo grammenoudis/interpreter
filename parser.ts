@@ -54,8 +54,18 @@ export default class Parser {
   }
 
   private ParseStatement(): Statement {
-    if (this.at().type == TokenType.If) return this.ParseIfStatement();
-    return this.ParseExpression();
+    switch (this.at().type) {
+      case TokenType.If:
+        return this.ParseIfStatement();
+      case TokenType.Constants:
+        return this.ParseDeclarationOfConstants();
+      case TokenType.Variables:
+        return this.ParseDeclarationOfVariables();
+      case TokenType.Print:
+        return this.ParsePrintStatement();
+      default:
+        return this.ParseExpression();
+    }
   }
 
   private ParseIfStatement(): Statement {
@@ -113,6 +123,8 @@ export default class Parser {
   }
 
   private ParseDeclarationOfConstants(): Statement {
+    this.advance();
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
     let constantsToDeclare: Identifier[] = [];
     while (this.at().type != TokenType.Variables) {
       if (this.at().type != TokenType.Identifier) {
@@ -141,6 +153,8 @@ export default class Parser {
   }
 
   private ParseDeclarationOfVariables(): Statement {
+    this.advance();
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
     let variablesToDeclare: Identifier[] = [];
     let typeOfVariables = this.advance().type;
     if (typeOfVariables !== TokenType.Constants)
@@ -436,37 +450,15 @@ export default class Parser {
           }`
         );
         return expression;
-      case TokenType.Print:
-        return this.ParsePrintStatement();
-      case TokenType.Constants:
-        this.advance();
-        this.expect(TokenType.EndOfLine, 'Expected end of line');
-        return this.ParseDeclarationOfConstants();
-      case TokenType.Variables:
-        this.advance();
-        this.expect(TokenType.EndOfLine, 'Expected end of line');
-        return this.ParseDeclarationOfVariables();
-      case TokenType.Integers:
-      case TokenType.RealNumbers:
-      case TokenType.Booleans:
-      case TokenType.Alphanumericals:
-        return this.ParseDeclarationOfVariables();
       case TokenType.Start:
         this.advance();
         this.expect(TokenType.EndOfLine, 'Expected end of line');
         return this.ParseStatement();
-      case TokenType.And:
-        return this.ParseAndExpression();
-      case TokenType.Or:
-        return this.ParseOrExpression();
       case TokenType.Not:
         return this.ParseNotExpression();
-      case TokenType.If:
-        return this.ParseIfStatement();
       case TokenType.EndOfProgram:
         this.advance();
         this.expect(TokenType.EndOfLine, 'Expected end of line');
-      // return this.ParseStatement();
       default:
         errorMessage = `Unexpected token ${this.at().value} at line ${
           this.at().line

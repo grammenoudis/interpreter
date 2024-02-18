@@ -15,7 +15,9 @@ export type NodeTypes =
   | 'ConstantVariableDeclaration'
   | 'StringLiteral'
   | 'BooleanLiteral'
-  | 'IfStatement';
+  | 'IfStatement'
+  | 'CaseStatement'
+  | 'SwitchStatement';
 
 export interface Statement {
   type: NodeTypes;
@@ -72,4 +74,16 @@ export interface IfStatement extends Statement {
   condition: Expression;
   consequent: Statement;
   alternate?: Statement;
+}
+
+export interface CaseStatement extends Statement {
+  type: 'CaseStatement';
+  test: Expression;
+  consequent: Statement[];
+}
+
+export interface SwitchStatement extends Statement {
+  type: 'SwitchStatement';
+  discriminant: Expression;
+  cases: CaseStatement[];
 }

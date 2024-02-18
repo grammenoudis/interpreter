@@ -35,6 +35,10 @@ export enum TokenType {
   Start,
   Colon,
   EndOfProgram,
+  Switch,
+  EndSwitch,
+  Case,
+  Range,
   EOF,
 }
 
