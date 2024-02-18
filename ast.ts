@@ -17,7 +17,8 @@ export type NodeTypes =
   | 'BooleanLiteral'
   | 'IfStatement'
   | 'CaseStatement'
-  | 'SwitchStatement';
+  | 'SwitchStatement'
+  | 'ReadInputStatement';
 
 export interface Statement {
   type: NodeTypes;

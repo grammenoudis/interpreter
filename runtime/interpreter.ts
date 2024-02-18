@@ -9,6 +9,8 @@ import {
   Statement,
 } from '../ast';
 import Environment from './environment';
+import { tokenize } from '../lexer';
+import Parser from '../parser';
 
 var outputList: any = [];
 var errorMessage: string | undefined;
@@ -104,6 +106,44 @@ function evaluateIdentifierExpression(
 ): RuntimeValue {
   const val = env.assignVariable(ASTnode.name, value);
   return val;
+}
+
+function evaluateReadInputStatement(
+  ASTnode: any,
+  env: Environment
+): RuntimeValue {
+  let keyboardFile = fs.readFileSync('keyboard.txt', 'utf8');
+  let lines = keyboardFile.split('\n');
+  for (const identifierName of ASTnode.identifiers) {
+    let identifier = identifierName.value;
+    let line = lines.shift()?.trim();
+    if (line === undefined) {
+      errorMessage = `Δεν υπάρχει είσοδος για το ${identifier}`;
+      return {} as NumberValue;
+    }
+    console.log(identifier, line);
+    let valueType = env.lookUpVariableType(identifier);
+    if (valueType === 'Integer') {
+      let value = parseInt(line);
+      if (isNaN(value)) {
+        errorMessage = `Αναμενόταν ακέραιος για το ${identifier}`;
+        return {} as NumberValue;
+      }
+      env.assignVariable(identifier, { type: 'Integer', value: value });
+    } else if (valueType === 'Real') {
+      let value = parseFloat(line);
+      if (isNaN(value)) {
+        errorMessage = `Αναμενόταν πραγματικός για το ${identifier}`;
+        return {} as NumberValue;
+      }
+      env.assignVariable(identifier, { type: 'Real', value: value });
+    } else if (valueType === 'String') {
+      env.assignVariable(identifier, { type: 'String', value: line });
+    } else if (valueType === 'Boolean') {
+      errorMessage = 'Δεν υποστηρίζεται η είσοδος λογικής τιμής';
+    }
+  }
+  return {} as NumberValue;
 }
 
 function evaluateIfStatement(ASTnode: any, env: Environment): RuntimeValue {
@@ -215,6 +255,8 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       return {} as NumberValue;
     case 'IfStatement':
       return evaluateIfStatement(ASTnode as any, env);
+    case 'ReadInputStatement':
+      return evaluateReadInputStatement(ASTnode as any, env);
     default:
       errorMessage = `Unknown AST node type: ${(ASTnode as any).type}`;
       return {} as NumberValue;

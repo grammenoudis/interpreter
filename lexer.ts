@@ -39,6 +39,7 @@ export enum TokenType {
   EndSwitch,
   Case,
   Range,
+  ReadInput,
   EOF,
 }
 
@@ -65,6 +66,7 @@ const KEYWORDS = new Map<string, TokenType>([
   ['ΤΕΛΟΣ_ΑΝ', TokenType.EndIf],
   ['ΑΡΧΗ', TokenType.Start],
   ['ΤΕΛΟΣ_ΠΡΟΓΡΑΜΜΑΤΟΣ', TokenType.EndOfProgram],
+  ['ΔΙΑΒΑΣΕ', TokenType.ReadInput],
 ]);
 
 export interface Token {

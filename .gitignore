@@ -1,5 +1,6 @@
 dist
 input.txt
 output.txt
+keyboard.txt
 build
 .DS_Store

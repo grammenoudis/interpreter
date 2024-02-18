@@ -63,9 +63,34 @@ export default class Parser {
         return this.ParseDeclarationOfVariables();
       case TokenType.Print:
         return this.ParsePrintStatement();
+      case TokenType.ReadInput:
+        return this.ParseReadInputStatement();
       default:
         return this.ParseExpression();
     }
+  }
+
+  private ParseReadInputStatement(): Statement {
+    this.advance();
+    let identifiers: Identifier[] = [];
+    identifiers.push(
+      this.expect(TokenType.Identifier, 'Expected identifier') as any
+    );
+    while (
+      this.at().type == TokenType.Seperator &&
+      this.NotEOF() &&
+      !errorMessage
+    ) {
+      this.advance();
+      identifiers.push(
+        this.expect(TokenType.Identifier, 'Expected identifier') as any
+      );
+    }
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
+    return {
+      type: 'ReadInputStatement',
+      identifiers: identifiers,
+    } as Statement;
   }
 
   private ParseIfStatement(): Statement {

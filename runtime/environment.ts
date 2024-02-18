@@ -49,6 +49,9 @@ export default class Environment {
     if (this.constants.has(variableName)) {
       return this;
     }
+    if (this.variableTypes.has(variableName)) {
+      return this;
+    }
     if (this.parent) {
       return this.parent.resolve(variableName);
     }
@@ -61,6 +64,14 @@ export default class Environment {
       return env.variables.get(name) as RuntimeValue;
     } else if (env.constants.has(name)) {
       return env.constants.get(name) as RuntimeValue;
+    }
+    throw new Error(`Variable ${name} not declared`);
+  }
+
+  public lookUpVariableType(name: string): string {
+    const env = this.resolve(name);
+    if (env.variableTypes.has(name)) {
+      return env.variableTypes.get(name) as string;
     }
     throw new Error(`Variable ${name} not declared`);
   }
