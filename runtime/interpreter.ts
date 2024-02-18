@@ -139,13 +139,14 @@ function evaluateForStatement(ASTnode: any, env: Environment): RuntimeValue {
   let step = evaluate(ASTnode.step, env);
   console.log(step.type, step.value);
   if (
-    step.type !== 'number' ||
-    step.value === 'Integer' ||
-    step.value === 'Real'
+    step.type !== 'Integer' &&
+    step.type !== 'Real' &&
+    step.type !== 'number'
   ) {
     errorMessage = 'Το βήμα του for πρέπει να είναι αριθμός';
     return {} as NumberValue;
   }
+
   if (step.value === 0) {
     errorMessage = 'Το βήμα του for δεν μπορεί να είναι 0';
     return {} as NumberValue;
