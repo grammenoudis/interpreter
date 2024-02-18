@@ -108,18 +108,23 @@ function evaluateIdentifierExpression(
 }
 
 function evaluateForStatement(ASTnode: any, env: Environment): RuntimeValue {
-  if (
-    ASTnode.identifier.type !== TokenType.Identifier ||
-    ASTnode.start.type !== 'NumberLiteral' ||
-    ASTnode.end.type !== 'NumberLiteral' ||
-    ASTnode.step.type !== 'NumberLiteral'
-  ) {
-    errorMessage = 'Λάθος στην δήλωση του for';
-    return {} as NumberValue;
-  }
+  console.table(ASTnode.step.type);
+  // if (
+  //   ASTnode.identifier.type !== TokenType.Identifier ||
+  //   ASTnode.start.type !== 'NumberLiteral' ||
+  //   ASTnode.end.type !== 'NumberLiteral' ||
+  //   ASTnode.step.type !== 'NumberLiteral'
+  // ) {
+  //   errorMessage = 'Λάθος στην δήλωση του for';
+  //   return {} as NumberValue;
+  // }
 
   let start = evaluate(ASTnode.start, env);
-  if (start.type !== 'Integer' && start.type !== 'Real') {
+  if (
+    start.type !== 'Integer' &&
+    start.type !== 'Real' &&
+    start.type !== 'number'
+  ) {
     errorMessage = 'Η αρχική τιμή του for πρέπει να είναι αριθμός';
     return {} as NumberValue;
   }
@@ -127,12 +132,17 @@ function evaluateForStatement(ASTnode: any, env: Environment): RuntimeValue {
   console.table(start);
 
   let end = evaluate(ASTnode.end, env);
-  if (end.type !== 'Integer' && end.type !== 'Real') {
+  if (end.type !== 'Integer' && end.type !== 'Real' && end.type !== 'number') {
     errorMessage = 'Η τελική τιμή του for πρέπει να είναι αριθμός';
     return {} as NumberValue;
   }
   let step = evaluate(ASTnode.step, env);
-  if (step.type !== 'Integer' && step.type !== 'Real') {
+  console.log(step.type, step.value);
+  if (
+    step.type !== 'number' ||
+    step.value === 'Integer' ||
+    step.value === 'Real'
+  ) {
     errorMessage = 'Το βήμα του for πρέπει να είναι αριθμός';
     return {} as NumberValue;
   }
@@ -141,13 +151,15 @@ function evaluateForStatement(ASTnode: any, env: Environment): RuntimeValue {
     return {} as NumberValue;
   }
 
-  while (start.value <= (end.value as any)) {
+  while (start.value != (end.value as any)) {
     console.log(start.value, end.value, step.value);
     for (const statement of ASTnode.body) {
       evaluate(statement, env);
     }
     start.value =
       (env.lookUpVariable(ASTnode.identifier.value).value as any) + step.value;
+    if ((step.value as any) > 0 && start.value > end.value) break;
+    if ((step.value as any) < 0 && start.value < end.value) break;
   }
   return {} as NumberValue;
 }
@@ -248,14 +260,13 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
         return {
           type: 'number',
           value: -((ASTnode as any).right as RuntimeValue).value,
-        } as NumberValue;
+        } as RuntimeValue;
       } else if ((ASTnode as any).operator === '+') {
         return {
           type: 'number',
           value: ((ASTnode as any).right as RuntimeValue).value,
-        } as NumberValue;
+        } as RuntimeValue;
       } else {
-        console.table(ASTnode);
         let res = evaluate((ASTnode as any).right, env);
         return {
           type: 'Boolean',
