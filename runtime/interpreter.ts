@@ -9,8 +9,7 @@ import {
   Statement,
 } from '../ast';
 import Environment from './environment';
-import { TokenType, tokenize } from '../lexer';
-import Parser from '../parser';
+import { TokenType } from '../lexer';
 
 var outputList: any = [];
 var errorMessage: string | undefined;
@@ -137,7 +136,12 @@ function evaluateForStatement(ASTnode: any, env: Environment): RuntimeValue {
     errorMessage = 'Το βήμα του for πρέπει να είναι αριθμός';
     return {} as NumberValue;
   }
-  while (start.value != (end.value as any) + 1) {
+  if (step.value === 0) {
+    errorMessage = 'Το βήμα του for δεν μπορεί να είναι 0';
+    return {} as NumberValue;
+  }
+
+  while (start.value <= (end.value as any)) {
     console.log(start.value, end.value, step.value);
     for (const statement of ASTnode.body) {
       evaluate(statement, env);
