@@ -106,6 +106,34 @@ function evaluateIdentifierExpression(
   return val;
 }
 
+function evaluateIfStatement(ASTnode: any, env: Environment): RuntimeValue {
+  const condition = evaluate(ASTnode.condition, env);
+  if (condition.value) {
+    for (const statement of ASTnode.consequent) {
+      if (statement.type === 'IfStatement') {
+        return evaluateIfStatement(statement, env);
+      } else {
+        evaluate(statement, env);
+      }
+    }
+    return {} as NumberValue;
+  } else if (ASTnode.alternate) {
+    console.log(ASTnode.alternate.type);
+    if (ASTnode.alternate.type === 'IfStatement') {
+      return evaluateIfStatement(ASTnode.alternate, env);
+    }
+    for (const statement of ASTnode.alternate) {
+      if (statement.type === 'IfStatement') {
+        return evaluateIfStatement(statement, env);
+      } else {
+        evaluate(statement, env);
+      }
+    }
+    return {} as NumberValue;
+  }
+  return {} as NumberValue;
+}
+
 export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
   switch (ASTnode.type) {
     case 'Identifier':
@@ -186,8 +214,10 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
         env.declareConstant(variable.name, evaluate(variable.value, env));
       }
       return {} as NumberValue;
+    case 'IfStatement':
+      return evaluateIfStatement(ASTnode as any, env);
     default:
       errorMessage = `Unknown AST node type: ${(ASTnode as any).type}`;
-      process.exit(1);
+      return {} as NumberValue;
   }
 }

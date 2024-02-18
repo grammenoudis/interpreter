@@ -54,7 +54,62 @@ export default class Parser {
   }
 
   private ParseStatement(): Statement {
+    if (this.at().type == TokenType.If) return this.ParseIfStatement();
     return this.ParseExpression();
+  }
+
+  private ParseIfStatement(): Statement {
+    this.advance();
+    const condition = this.ParseExpression();
+    this.expect(TokenType.Then, 'Expected THEN');
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
+    while (this.at().type == TokenType.EndOfLine) this.advance();
+    var consequent: Statement[] = [];
+    while (
+      this.at().type != TokenType.Else &&
+      this.at().type != TokenType.EndOfProgram &&
+      this.at().type != TokenType.EndIf &&
+      this.at().type != TokenType.ElseIf
+    ) {
+      consequent.push(this.ParseStatement());
+    }
+    if (this.at().type == TokenType.ElseIf) {
+      return {
+        type: 'IfStatement',
+        condition: condition,
+        consequent: consequent,
+        alternate: this.ParseIfStatement(),
+      } as Statement;
+    }
+    if (this.at().type == TokenType.Else) {
+      this.advance();
+      this.expect(TokenType.EndOfLine, 'Expected end of line');
+      while (this.at().type == TokenType.EndOfLine) this.advance();
+      var alternate: Statement[] = [];
+      while (
+        this.at().type != TokenType.EndOfProgram &&
+        this.at().type != TokenType.EndIf
+      ) {
+        alternate.push(this.ParseStatement());
+      }
+      this.expect(TokenType.EndIf, 'Expected ENDIF');
+      this.expect(TokenType.EndOfLine, 'Expected end of line');
+      while (this.at().type == TokenType.EndOfLine) this.advance();
+      return {
+        type: 'IfStatement',
+        condition: condition,
+        consequent: consequent,
+        alternate: alternate,
+      } as Statement;
+    }
+    this.expect(TokenType.EndIf, 'Expected ENDIF');
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
+    while (this.at().type == TokenType.EndOfLine) this.advance();
+    return {
+      type: 'IfStatement',
+      condition: condition,
+      consequent: consequent,
+    } as Statement;
   }
 
   private ParseDeclarationOfConstants(): Statement {
@@ -406,6 +461,8 @@ export default class Parser {
         return this.ParseOrExpression();
       case TokenType.Not:
         return this.ParseNotExpression();
+      case TokenType.If:
+        return this.ParseIfStatement();
       case TokenType.EndOfProgram:
         this.advance();
         this.expect(TokenType.EndOfLine, 'Expected end of line');
