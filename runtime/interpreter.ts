@@ -9,7 +9,7 @@ import {
   Statement,
 } from '../ast';
 import Environment from './environment';
-import { tokenize } from '../lexer';
+import { TokenType, tokenize } from '../lexer';
 import Parser from '../parser';
 
 var outputList: any = [];
@@ -108,6 +108,46 @@ function evaluateIdentifierExpression(
   return val;
 }
 
+function evaluateForStatement(ASTnode: any, env: Environment): RuntimeValue {
+  if (
+    ASTnode.identifier.type !== TokenType.Identifier ||
+    ASTnode.start.type !== 'NumberLiteral' ||
+    ASTnode.end.type !== 'NumberLiteral' ||
+    ASTnode.step.type !== 'NumberLiteral'
+  ) {
+    errorMessage = 'Λάθος στην δήλωση του for';
+    return {} as NumberValue;
+  }
+
+  let start = evaluate(ASTnode.start, env);
+  if (start.type !== 'Integer' && start.type !== 'Real') {
+    errorMessage = 'Η αρχική τιμή του for πρέπει να είναι αριθμός';
+    return {} as NumberValue;
+  }
+  env.assignVariable(ASTnode.identifier.value, start);
+  console.table(start);
+
+  let end = evaluate(ASTnode.end, env);
+  if (end.type !== 'Integer' && end.type !== 'Real') {
+    errorMessage = 'Η τελική τιμή του for πρέπει να είναι αριθμός';
+    return {} as NumberValue;
+  }
+  let step = evaluate(ASTnode.step, env);
+  if (step.type !== 'Integer' && step.type !== 'Real') {
+    errorMessage = 'Το βήμα του for πρέπει να είναι αριθμός';
+    return {} as NumberValue;
+  }
+  while (start.value != (end.value as any) + 1) {
+    console.log(start.value, end.value, step.value);
+    for (const statement of ASTnode.body) {
+      evaluate(statement, env);
+    }
+    start.value =
+      (env.lookUpVariable(ASTnode.identifier.value).value as any) + step.value;
+  }
+  return {} as NumberValue;
+}
+
 function evaluateReadInputStatement(
   ASTnode: any,
   env: Environment
@@ -121,7 +161,6 @@ function evaluateReadInputStatement(
       errorMessage = `Δεν υπάρχει είσοδος για το ${identifier}`;
       return {} as NumberValue;
     }
-    console.log(identifier, line);
     let valueType = env.lookUpVariableType(identifier);
     if (valueType === 'Integer') {
       let value = parseInt(line);
@@ -257,6 +296,8 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       return evaluateIfStatement(ASTnode as any, env);
     case 'ReadInputStatement':
       return evaluateReadInputStatement(ASTnode as any, env);
+    case 'ForStatement':
+      return evaluateForStatement(ASTnode as any, env);
     default:
       errorMessage = `Unknown AST node type: ${(ASTnode as any).type}`;
       return {} as NumberValue;

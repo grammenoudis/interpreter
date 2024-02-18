@@ -18,7 +18,8 @@ export type NodeTypes =
   | 'IfStatement'
   | 'CaseStatement'
   | 'SwitchStatement'
-  | 'ReadInputStatement';
+  | 'ReadInputStatement'
+  | 'ForStatement';
 
 export interface Statement {
   type: NodeTypes;
@@ -87,4 +88,13 @@ export interface SwitchStatement extends Statement {
   type: 'SwitchStatement';
   discriminant: Expression;
   cases: CaseStatement[];
+}
+
+export interface ForStatement extends Statement {
+  type: 'ForStatement';
+  identifier: Identifier;
+  start: NumericLiteral;
+  end: NumericLiteral;
+  step: NumericLiteral;
+  body: Statement[];
 }

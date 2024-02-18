@@ -65,9 +65,40 @@ export default class Parser {
         return this.ParsePrintStatement();
       case TokenType.ReadInput:
         return this.ParseReadInputStatement();
+      case TokenType.For:
+        return this.ParseForStatement();
       default:
         return this.ParseExpression();
     }
+  }
+
+  private ParseForStatement(): Statement {
+    this.advance();
+    let identifier = this.expect(TokenType.Identifier, 'Expected identifier');
+    this.expect(TokenType.From, 'Expected FROM');
+    let start = this.ParseExpression();
+    this.expect(TokenType.Until, 'Expected UNTIL');
+    let end = this.ParseExpression();
+    let step = { type: 'NumberLiteral', value: 1 } as NumericLiteral;
+    if (this.at().type == TokenType.Step) {
+      this.advance();
+      step = this.ParseExpression() as any;
+    }
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
+    let body: Statement[] = [];
+    while (this.at().type != TokenType.EndFor) {
+      body.push(this.ParseStatement());
+    }
+    this.advance();
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
+    return {
+      type: 'ForStatement',
+      identifier: identifier,
+      start: start,
+      end: end,
+      step: step as NumericLiteral,
+      body: body as Statement[],
+    } as Statement;
   }
 
   private ParseReadInputStatement(): Statement {
@@ -99,7 +130,7 @@ export default class Parser {
     console.table(this.at());
     this.expect(TokenType.Then, 'Expected THEN');
     this.expect(TokenType.EndOfLine, 'Expected end of line');
-    // while (this.at().type == TokenType.EndOfLine) this.advance();
+    while (this.at().type == TokenType.EndOfLine) this.advance();
     var consequent: Statement[] = [];
     while (
       this.at().type != TokenType.Else &&
@@ -109,6 +140,7 @@ export default class Parser {
     ) {
       consequent.push(this.ParseStatement());
     }
+    while (this.at().type == TokenType.EndOfLine) this.advance();
     if (this.at().type == TokenType.ElseIf) {
       return {
         type: 'IfStatement',
@@ -117,10 +149,11 @@ export default class Parser {
         alternate: this.ParseIfStatement(),
       } as Statement;
     }
+    while (this.at().type == TokenType.EndOfLine) this.advance();
     if (this.at().type == TokenType.Else) {
       this.advance();
       this.expect(TokenType.EndOfLine, 'Expected end of line');
-      // while (this.at().type == TokenType.EndOfLine) this.advance();
+      while (this.at().type == TokenType.EndOfLine) this.advance();
       var alternate: Statement[] = [];
       while (
         this.at().type != TokenType.EndOfProgram &&
@@ -130,7 +163,7 @@ export default class Parser {
       }
       this.expect(TokenType.EndIf, 'Expected ENDIF');
       this.expect(TokenType.EndOfLine, 'Expected end of line');
-      // while (this.at().type == TokenType.EndOfLine) this.advance();
+      while (this.at().type == TokenType.EndOfLine) this.advance();
       return {
         type: 'IfStatement',
         condition: condition,
@@ -140,7 +173,7 @@ export default class Parser {
     }
     this.expect(TokenType.EndIf, 'Expected ENDIF');
     this.expect(TokenType.EndOfLine, 'Expected end of line');
-    // while (this.at().type == TokenType.EndOfLine) this.advance();
+    while (this.at().type == TokenType.EndOfLine) this.advance();
     return {
       type: 'IfStatement',
       condition: condition,

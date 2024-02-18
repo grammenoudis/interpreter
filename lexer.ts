@@ -40,6 +40,12 @@ export enum TokenType {
   Case,
   Range,
   ReadInput,
+  For,
+  EndFor,
+  From,
+  Until,
+  Step,
+  Repeat,
   EOF,
 }
 
@@ -67,6 +73,12 @@ const KEYWORDS = new Map<string, TokenType>([
   ['ΑΡΧΗ', TokenType.Start],
   ['ΤΕΛΟΣ_ΠΡΟΓΡΑΜΜΑΤΟΣ', TokenType.EndOfProgram],
   ['ΔΙΑΒΑΣΕ', TokenType.ReadInput],
+  ['ΓΙΑ', TokenType.For],
+  ['ΑΠΟ', TokenType.From],
+  ['ΜΕΧΡΙ', TokenType.Until],
+  ['ΜΕ_ΒΗΜΑ', TokenType.Step],
+  ['ΕΠΑΝΑΛΑΒΕ', TokenType.Repeat],
+  ['ΤΕΛΟΣ_ΕΠΑΝΑΛΗΨΗΣ', TokenType.EndFor],
 ]);
 
 export interface Token {
