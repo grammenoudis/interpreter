@@ -57,6 +57,10 @@ export default class Parser {
     switch (this.at().type) {
       case TokenType.If:
         return this.ParseIfStatement();
+      case TokenType.Program:
+        this.advance();
+        this.expect(TokenType.Identifier, 'Περίμενα το όνομα του προγράμματος');
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
       case TokenType.Constants:
         return this.ParseDeclarationOfConstants();
       case TokenType.Variables:

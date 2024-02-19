@@ -46,9 +46,13 @@ export enum TokenType {
   Until,
   Step,
   Repeat,
+  Program,
+  LBracket,
+  RBracket,
   EOF,
 }
 const KEYWORDS = new Map<string, TokenType>([
+  ['ΠΡΟΓΡΑΜΜΑ', TokenType.Program],
   ['MOD', TokenType.Mod],
   ['DIV', TokenType.Div],
   ['EOF', TokenType.EOF],
@@ -85,7 +89,7 @@ export interface Token {
   type: TokenType;
   line: number;
   column: number;
-  arrayCell?: number;
+  arrayCell?: any;
 }
 
 function makeToken(
@@ -93,7 +97,7 @@ function makeToken(
   type: TokenType,
   line: number,
   column: number,
-  arrayCell?: number
+  arrayCell?: any
 ): Token {
   return { value, type, line, column, arrayCell };
 }
@@ -127,11 +131,11 @@ function expectTemplate(src: string[]): string | void {
 export function tokenize(input: string): Token[] | string {
   const tokens: Token[] = [];
   const src: string[] = input.split('');
-  let error = expectTemplate(src);
-  if (error) {
-    errorMessage = error;
-    return errorMessage;
-  }
+  // let error = expectTemplate(src);
+  // if (error) {
+  //   errorMessage = error;
+  //   return errorMessage;
+  // }
 
   let line: number = 2;
   let column: number = 0;
@@ -190,10 +194,15 @@ export function tokenize(input: string): Token[] | string {
         break;
       case ' ':
         break;
+      case '[':
+        tokens.push(makeToken(char, TokenType.LBracket, line, column));
+        break;
+      case ']':
+        tokens.push(makeToken(char, TokenType.RBracket, line, column));
+        break;
       default:
         let charactersToBuild: string = char;
         let isExpectingString: boolean = char == `'`;
-        let arrayCell = '';
 
         if (isExpectingString) {
           while (src[0] !== '\n' && src[0] !== "'") {
@@ -206,26 +215,10 @@ export function tokenize(input: string): Token[] | string {
           }
         } else {
           while (
-            src[0].match(/[a-zA-ZΑ-Ωα-ω0-9.]/) ||
-            src[0] === '[' ||
+            (src.length > 0 && src[0].match(/[a-zA-ZΑ-Ωα-ω0-9.]/)) ||
             src[0] === '_'
           ) {
-            if (src[0] === '[') {
-              src.shift();
-              while (
-                (src[0] as string) !== ']' &&
-                (src[0] as string) !== '\n'
-              ) {
-                if (isWhitespace(src[0])) {
-                  src.shift();
-                } else {
-                  arrayCell += src.shift();
-                  column++;
-                }
-              }
-              // Shift the closing bracket
-              src.shift();
-            } else if (!isWhitespace(src[0])) {
+            if (!isWhitespace(src[0])) {
               charactersToBuild += src.shift();
               column++;
             }
@@ -259,20 +252,9 @@ export function tokenize(input: string): Token[] | string {
             );
           }
         } else if (charactersToBuild[0].match(/[a-zA-ZΑ-Ωα-ω]/)) {
-          if (arrayCell) {
-            tokens.push(
-              makeToken(
-                charactersToBuild,
-                TokenType.Identifier,
-                line,
-                column,
-                parseInt(arrayCell)
-              )
-            );
-          } else
-            tokens.push(
-              makeToken(charactersToBuild, TokenType.Identifier, line, column)
-            );
+          tokens.push(
+            makeToken(charactersToBuild, TokenType.Identifier, line, column)
+          );
         } else {
           if (char === '"')
             errorMessage = `Στην γραμμή ${line}, στήλη ${column}, χρησιμοποίησε απόστροφο αντί για εισαγωγικά`;
