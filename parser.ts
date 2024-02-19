@@ -235,9 +235,11 @@ export default class Parser {
               this.at().line
             } column ${this.at().column}`;
           }
+          let value = this.at().value;
           variablesToDeclare.push({
             type: 'Identifier',
-            name: this.advance().value,
+            name: value,
+            index: parseInt(this.advance().arrayCell),
           } as Identifier);
           if (this.at().type == TokenType.EndOfLine) break;
           this.expect(TokenType.Seperator, 'Expected comma');
@@ -250,9 +252,11 @@ export default class Parser {
         } as Statement;
       case TokenType.RealNumbers:
         while (this.at().type != TokenType.EndOfLine) {
+          let value = this.at().value;
           variablesToDeclare.push({
             type: 'Identifier',
-            name: this.advance().value,
+            name: value,
+            index: parseInt(this.advance().arrayCell),
           } as Identifier);
           if (this.at().type == TokenType.EndOfLine) break;
           this.expect(TokenType.Seperator, 'Expected comma');
@@ -265,9 +269,11 @@ export default class Parser {
         } as Statement;
       case TokenType.Alphanumericals:
         while (this.at().type != TokenType.EndOfLine) {
+          let value = this.at().value;
           variablesToDeclare.push({
             type: 'Identifier',
-            name: this.advance().value,
+            name: value,
+            index: parseInt(this.advance().arrayCell),
           } as Identifier);
           if (this.at().type == TokenType.EndOfLine) break;
           this.expect(TokenType.Seperator, 'Expected comma');
@@ -280,9 +286,11 @@ export default class Parser {
         } as Statement;
       case TokenType.Booleans:
         while (this.at().type != TokenType.EndOfLine) {
+          let value = this.at().value;
           variablesToDeclare.push({
             type: 'Identifier',
-            name: this.advance().value,
+            name: value,
+            index: parseInt(this.advance().arrayCell),
           } as Identifier);
           if (this.at().type == TokenType.EndOfLine) break;
           this.expect(TokenType.Seperator, 'Expected comma');
