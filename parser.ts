@@ -45,7 +45,11 @@ export default class Parser {
       body: [],
     };
 
-    while (this.at().type != TokenType.EndOfProgram && !errorMessage) {
+    while (
+      this.at().type != TokenType.EndOfProgram &&
+      !errorMessage &&
+      this.NotEOF()
+    ) {
       program.body.push(this.ParseStatement());
     }
     if (errorMessage) return errorMessage;
@@ -326,6 +330,15 @@ export default class Parser {
     }
   }
   ParseAssignmentExpression(): Statement {
+    let res;
+    if (this.at().arrayCell) {
+      const parser = new Parser();
+      res = parser.ProduceAST(this.at().arrayCell);
+      if (typeof res === 'string') {
+        errorMessage = res;
+      }
+      if (typeof res != 'string') res = res.body[0] as any;
+    }
     const identifier = this.expect(TokenType.Identifier, 'Expected identifier');
     this.expect(TokenType.Assign, 'Expected assignment operator');
 
@@ -340,7 +353,11 @@ export default class Parser {
 
     return {
       type: 'AssignmentExpression',
-      identifier: { type: 'Identifier', name: identifier.value } as Identifier,
+      identifier: {
+        type: 'Identifier',
+        name: identifier.value,
+        index: res,
+      } as Identifier,
       value: value,
     } as Statement;
   }
@@ -466,7 +483,7 @@ export default class Parser {
     return left;
   }
 
-  private ParsePrimaryExpression(): Expression {
+  private ParsePrimaryExpression(): any {
     if (this.at().value == '-' || this.at().value == '+') {
       const operator = this.advance().value;
       const right = this.ParsePrimaryExpression();
@@ -479,12 +496,25 @@ export default class Parser {
     const tk = this.at().type;
     switch (tk) {
       case TokenType.Identifier:
+        let index;
+        if (this.at().arrayCell) {
+          const parser = new Parser();
+          let res = parser.ProduceAST(this.at().arrayCell);
+          if (typeof res === 'string') {
+            errorMessage = res;
+            break;
+          }
+          res = res.body[0] as any;
+          index = res;
+        }
         if (this.tokens[1].type == TokenType.Assign) {
           return this.ParseAssignmentExpression();
         }
+        console.table(index);
         return {
           type: 'Identifier',
           name: this.advance().value,
+          index: index,
         } as Identifier;
       case TokenType.Integer:
       case TokenType.RealNumber:
@@ -526,6 +556,7 @@ export default class Parser {
         this.advance();
         return this.ParseStatement();
       default:
+        console.log(this.at());
         errorMessage = `Unexpected token ${this.at().value} at line ${
           this.at().line
         } column ${this.at().column}`;

@@ -109,33 +109,9 @@ function isWhitespace(char: string): boolean {
 
 var errorMessage: string | void;
 
-function expectTemplate(src: string[]): string | void {
-  let programmaKeyword = src.splice(0, 9);
-  if (programmaKeyword.join('') !== 'ΠΡΟΓΡΑΜΜΑ') {
-    return 'Αναμενόταν η λέξη "ΠΡΟΓΡΑΜΜΑ"';
-  }
-
-  while (isWhitespace(src[0])) {
-    src.shift();
-  }
-
-  let ProgramHasName = false;
-  while (src[0] !== '\n') {
-    ProgramHasName = true;
-    src.shift();
-  }
-  if (!ProgramHasName) return 'Το πρόγραμμα σου πρέπει να έχει όνομα';
-  //remove newline character
-  src.shift();
-}
 export function tokenize(input: string): Token[] | string {
   const tokens: Token[] = [];
   const src: string[] = input.split('');
-  // let error = expectTemplate(src);
-  // if (error) {
-  //   errorMessage = error;
-  //   return errorMessage;
-  // }
 
   let line: number = 2;
   let column: number = 0;
@@ -194,15 +170,10 @@ export function tokenize(input: string): Token[] | string {
         break;
       case ' ':
         break;
-      case '[':
-        tokens.push(makeToken(char, TokenType.LBracket, line, column));
-        break;
-      case ']':
-        tokens.push(makeToken(char, TokenType.RBracket, line, column));
-        break;
       default:
         let charactersToBuild: string = char;
         let isExpectingString: boolean = char == `'`;
+        let arrayCell = '';
 
         if (isExpectingString) {
           while (src[0] !== '\n' && src[0] !== "'") {
@@ -216,9 +187,25 @@ export function tokenize(input: string): Token[] | string {
         } else {
           while (
             (src.length > 0 && src[0].match(/[a-zA-ZΑ-Ωα-ω0-9.]/)) ||
-            src[0] === '_'
+            src[0] === '_' ||
+            src[0] === '['
           ) {
-            if (!isWhitespace(src[0])) {
+            if (src[0] === '[') {
+              src.shift();
+              while (
+                (src[0] as string) !== ']' &&
+                (src[0] as string) !== '\n'
+              ) {
+                if (isWhitespace(src[0])) {
+                  src.shift();
+                } else {
+                  arrayCell += src.shift();
+                  column++;
+                }
+              }
+              // Shift the closing bracket
+              src.shift();
+            } else if (!isWhitespace(src[0])) {
               charactersToBuild += src.shift();
               column++;
             }
@@ -252,9 +239,23 @@ export function tokenize(input: string): Token[] | string {
             );
           }
         } else if (charactersToBuild[0].match(/[a-zA-ZΑ-Ωα-ω]/)) {
-          tokens.push(
-            makeToken(charactersToBuild, TokenType.Identifier, line, column)
-          );
+          console.log(arrayCell);
+          arrayCell = arrayCell + '\n';
+          if (arrayCell) {
+            tokens.push(
+              makeToken(
+                charactersToBuild,
+                TokenType.Identifier,
+                line,
+                column,
+                //get rid of newline and eof
+                arrayCell.slice(0, arrayCell.length - 1)
+              )
+            );
+          } else
+            tokens.push(
+              makeToken(charactersToBuild, TokenType.Identifier, line, column)
+            );
         } else {
           if (char === '"')
             errorMessage = `Στην γραμμή ${line}, στήλη ${column}, χρησιμοποίησε απόστροφο αντί για εισαγωγικά`;
