@@ -239,7 +239,6 @@ export function tokenize(input: string): Token[] | string {
             );
           }
         } else if (charactersToBuild[0].match(/[a-zA-ZΑ-Ωα-ω]/)) {
-          console.log(arrayCell);
           arrayCell = arrayCell + '\n';
           if (arrayCell) {
             tokens.push(

@@ -1,10 +1,10 @@
 import {
-  Statement,
-  Program,
-  Expression,
   BinaryExpression,
-  NumericLiteral,
+  Expression,
   Identifier,
+  NumericLiteral,
+  Program,
+  Statement,
   UnaryExpression,
 } from './ast';
 
@@ -135,7 +135,6 @@ export default class Parser {
   private ParseIfStatement(): Statement {
     this.advance();
     const condition = this.ParseExpression();
-    console.table(this.at());
     this.expect(TokenType.Then, 'Expected THEN');
     this.expect(TokenType.EndOfLine, 'Expected end of line');
     while (this.at().type == TokenType.EndOfLine) this.advance();
@@ -518,7 +517,6 @@ export default class Parser {
         if (this.tokens[1].type == TokenType.Assign) {
           return this.ParseAssignmentExpression();
         }
-        console.table(index);
         return {
           type: 'Identifier',
           name: this.advance().value,
@@ -564,7 +562,6 @@ export default class Parser {
         this.advance();
         return this.ParseStatement();
       default:
-        console.log(this.at());
         errorMessage = `Unexpected token ${this.at().value} at line ${
           this.at().line
         } column ${this.at().column}`;

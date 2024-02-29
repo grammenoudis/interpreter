@@ -89,9 +89,13 @@ export function evaluateBinaryExpression(
 
 function evaluateIdentifier(
   ASTnode: Identifier,
-  env: Environment
+  env: Environment,
+  index: RuntimeValue | undefined
 ): RuntimeValue {
-  const value = env.lookUpVariable(ASTnode.name);
+  let value;
+  if (index) {
+    value = env.lookUpVariable(ASTnode.name, index.value as number);
+  } else value = env.lookUpVariable(ASTnode.name);
   if (value === undefined) {
     errorMessage = `Undefined variable: ${ASTnode.name}`;
   }
@@ -228,7 +232,10 @@ function evaluateIfStatement(ASTnode: any, env: Environment): RuntimeValue {
 export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
   switch (ASTnode.type) {
     case 'Identifier':
-      return evaluateIdentifier(ASTnode as Identifier, env);
+      let arrayIndex;
+      if ((ASTnode as any).index)
+        arrayIndex = evaluate((ASTnode as any).index, env);
+      return evaluateIdentifier(ASTnode as Identifier, env, arrayIndex);
     case 'NumberLiteral':
       return {
         type: Number.isInteger((ASTnode as NumericLiteral).value)
@@ -246,7 +253,11 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       return evaluateProgram(ASTnode as Program, env);
     case 'AssignmentExpression':
       let value = evaluate((ASTnode as any).value, env);
-      env.assignVariable((ASTnode as any).identifier.name, value);
+      let index;
+      if ((ASTnode as any).identifier.index)
+        index = evaluate((ASTnode as any).identifier.index, env);
+      env.assignVariable((ASTnode as any).identifier.name, value, index);
+
       return evaluateIdentifierExpression(
         (ASTnode as any).identifier,
         env,
@@ -281,22 +292,23 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       return { type: 'String', value: stringToPrint } as RuntimeValue;
     case 'IntegerVariableDeclaration':
       for (const variable of (ASTnode as any).value) {
-        env.declareVariable(variable.name, 'Integer');
+        env.declareVariable(variable.name, 'Integer', variable.index);
       }
       return {} as NumberValue;
     case 'RealVariableDeclaration':
+      if ((ASTnode as any).index) index = evaluate((ASTnode as any).index, env);
       for (const variable of (ASTnode as any).value) {
-        env.declareVariable(variable.name, 'Real');
+        env.declareVariable(variable.name, 'Real', variable.index);
       }
       return {} as NumberValue;
     case 'StringVariableDeclaration':
       for (const variable of (ASTnode as any).value) {
-        env.declareVariable(variable.name, 'String');
+        env.declareVariable(variable.name, 'String', variable.index);
       }
       return {} as NumberValue;
     case 'BooleanVariableDeclaration':
       for (const variable of (ASTnode as any).value) {
-        env.declareVariable(variable.name, 'Boolean');
+        env.declareVariable(variable.name, 'Boolean', variable.index);
       }
       return {} as NumberValue;
     case 'ConstantVariableDeclaration':

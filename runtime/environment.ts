@@ -5,15 +5,29 @@ export default class Environment {
   private variables: Map<string, RuntimeValue>;
   private variableTypes: Map<string, string>;
   private constants: Map<string, RuntimeValue>;
+  private arrays: Map<string, RuntimeValue[]>;
+  private arrayLengths: Map<string, number>;
 
   constructor(parentENV?: Environment) {
     this.parent = parentENV;
     this.variables = new Map<string, RuntimeValue>();
     this.variableTypes = new Map<string, string>();
     this.constants = new Map<string, RuntimeValue>();
+    this.arrays = new Map<string, RuntimeValue[]>();
+    this.arrayLengths = new Map<string, number>();
   }
 
-  public declareVariable(name: string, type: string): void {
+  public declareVariable(
+    name: string,
+    type: string,
+    index: number | null = null
+  ): void {
+    if (index) {
+      this.arrays.set(name, []);
+      this.arrayLengths.set(name, index);
+      this.variableTypes.set(name, type);
+      return;
+    }
     if (this.variables.has(name)) {
       console.error(`Variable ${name} already declared`);
       process.exit(1);
@@ -34,10 +48,31 @@ export default class Environment {
     return;
   }
 
-  public assignVariable(name: string, value: RuntimeValue): RuntimeValue {
-    if (this.variableTypes.get(name) !== value.type) {
+  public assignVariable(
+    name: string,
+    value: RuntimeValue,
+    index: RuntimeValue | null = null
+  ): RuntimeValue {
+    if (index) {
+      const arr = this.arrays.get(name);
+      if (value.type == 'Integer' || value.type == 'Real') {
+        value = { type: 'number', value: value.value };
+      }
+      if (arr) {
+        arr[index.value as number] = value;
+        // console.log(arr[index.value as number]);
+        return value;
+      }
+      throw new Error(`Array ${name} not declared`);
+    }
+
+    if (
+      this.variableTypes.get(name) !== value.type &&
+      value.type !== 'number'
+    ) {
       throw new Error(`Type mismatch: cannot assign ${value.type} to ${name}`);
     }
+
     this.variables.set(name, value);
     return value;
   }
@@ -58,8 +93,19 @@ export default class Environment {
     throw new Error(`Variable ${variableName} not declared`);
   }
 
-  public lookUpVariable(name: string): RuntimeValue {
+  public lookUpVariable(
+    name: string,
+    index: number | null = null
+  ): RuntimeValue {
     const env = this.resolve(name);
+    if (index) {
+      const arr = env.arrays.get(name);
+      if (arr) {
+        console.table(this.arrays.get(name));
+        return arr[index];
+      }
+      throw new Error(`Array ${name} not declared`);
+    }
     if (env.variables.has(name)) {
       return env.variables.get(name) as RuntimeValue;
     } else if (env.constants.has(name)) {

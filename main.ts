@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-import Parser from './parser';
-import { evaluate } from './runtime/interpreter';
-import Environment from './runtime/environment';
-import * as path from 'path';
 import * as fs from 'fs';
+import * as path from 'path';
+import Parser from './parser';
+import Environment from './runtime/environment';
+import { evaluate } from './runtime/interpreter';
 
 export function run(isCli = false, src = '') {
   if (isCli) {
     const args = process.argv.slice(2);
     const absolutePath = path.resolve(args[0]);
-    fs.writeFile('output.txt', '', function (err) {});
+    fs.writeFile('output.txt', '', function(err) { });
     src = fs.readFileSync(absolutePath, 'utf-8');
   }
   const env = new Environment();
