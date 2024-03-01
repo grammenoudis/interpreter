@@ -68,6 +68,13 @@ export default class Parser {
       case TokenType.Constants:
         return this.ParseDeclarationOfConstants();
       case TokenType.Variables:
+        this.advance();
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
+        return this.ParseDeclarationOfVariables();
+      case TokenType.Integers:
+      case TokenType.RealNumbers:
+      case TokenType.Characters:
+      case TokenType.Booleans:
         return this.ParseDeclarationOfVariables();
       case TokenType.Print:
         return this.ParsePrintStatement();
@@ -219,8 +226,8 @@ export default class Parser {
   }
 
   private ParseDeclarationOfVariables(): Statement {
-    this.advance();
-    this.expect(TokenType.EndOfLine, 'Expected end of line');
+    // this.advance();
+    // this.expect(TokenType.EndOfLine, 'Expected end of line');
     let variablesToDeclare: Identifier[] = [];
     let typeOfVariables = this.advance().type;
     if (typeOfVariables !== TokenType.Constants)
@@ -266,7 +273,7 @@ export default class Parser {
           type: 'RealVariableDeclaration',
           value: variablesToDeclare,
         } as Statement;
-      case TokenType.Alphanumericals:
+      case TokenType.Characters:
         while (this.at().type != TokenType.EndOfLine) {
           let value = this.at().value;
           variablesToDeclare.push({
