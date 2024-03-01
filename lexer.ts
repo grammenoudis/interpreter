@@ -270,6 +270,16 @@ export function tokenize(input: string): Token[] | string {
   }
   tokens.push(makeToken('EOF', TokenType.EOF, line, column));
   console.log(tokens);
+
+  //remove consequtive newlines (accept only 1 at a time)
+  for (let i = 0; i < tokens.length; i++) {
+    if (tokens[i].type === TokenType.EndOfLine) {
+      if (tokens[i + 1].type === TokenType.EndOfLine) {
+        tokens.splice(i, 1);
+        i--;
+      }
+    }
+  }
   if (errorMessage) return errorMessage;
 
   return tokens;
