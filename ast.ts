@@ -20,7 +20,8 @@ export type NodeTypes =
   | 'SwitchStatement'
   | 'ReadInputStatement'
   | 'ForStatement'
-  | 'WhileStatement';
+  | 'WhileStatement'
+  | 'DoWhileStatement';
 
 export interface Statement {
   type: NodeTypes;
@@ -102,6 +103,12 @@ export interface ForStatement extends Statement {
 
 export interface WhileStatement extends Statement {
   type: 'WhileStatement';
+  condition: Expression;
+  body: Statement[];
+}
+
+export interface DoWhileStatement extends Statement {
+  type: 'DoWhileStatement';
   condition: Expression;
   body: Statement[];
 }

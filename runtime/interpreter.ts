@@ -165,6 +165,24 @@ function evaluateForStatement(ASTnode: any, env: Environment): RuntimeValue {
   return {} as NumberValue;
 }
 
+function evaluateDoWhileStatement(
+  ASTnode: any,
+  env: Environment
+): RuntimeValue {
+  let condition;
+  do {
+    for (const statement of ASTnode.body) {
+      evaluate(statement, env);
+    }
+    condition = evaluate(ASTnode.condition, env);
+    if (condition.type !== 'Boolean') {
+      errorMessage = 'Η συνθήκη του while πρέπει να είναι λογική τιμή';
+      return {} as NumberValue;
+    }
+  } while (condition.value);
+  return {} as NumberValue;
+}
+
 function evaluateWhileStatement(ASTnode: any, env: Environment): RuntimeValue {
   let condition = evaluate(ASTnode.condition, env);
   if (condition.type !== 'Boolean') {
@@ -344,6 +362,8 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       return evaluateForStatement(ASTnode as any, env);
     case 'WhileStatement':
       return evaluateWhileStatement(ASTnode as any, env);
+    case 'DoWhileStatement':
+      return evaluateDoWhileStatement(ASTnode as any, env);
     default:
       errorMessage = `Unknown AST node type: ${(ASTnode as any).type}`;
       return {} as NumberValue;

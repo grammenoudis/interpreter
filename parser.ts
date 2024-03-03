@@ -84,9 +84,28 @@ export default class Parser {
         return this.ParseForStatement();
       case TokenType.While:
         return this.ParseWhileStatement();
+      case TokenType.Repeat:
+        return this.ParseDoWhileStatement();
       default:
         return this.ParseExpression();
     }
+  }
+
+  private ParseDoWhileStatement(): Statement {
+    this.advance();
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
+    let body: Statement[] = [];
+    while (this.at().type != TokenType.DoWhile) {
+      body.push(this.ParseStatement());
+    }
+    this.advance();
+    let condition = this.ParseExpression();
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
+    return {
+      type: 'DoWhileStatement',
+      condition: condition,
+      body: body,
+    } as Statement;
   }
 
   private ParseWhileStatement(): Statement {
