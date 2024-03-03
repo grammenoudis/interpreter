@@ -169,8 +169,13 @@ function evaluateDoWhileStatement(
   ASTnode: any,
   env: Environment
 ): RuntimeValue {
-  let condition;
-  do {
+  for (const statement of ASTnode.body) evaluate(statement, env);
+  let condition = evaluate(ASTnode.condition, env);
+  if (condition.type !== 'Boolean') {
+    errorMessage = 'Η συνθήκη του while πρέπει να είναι λογική τιμή';
+    return {} as NumberValue;
+  }
+  while (!condition.value) {
     for (const statement of ASTnode.body) {
       evaluate(statement, env);
     }
@@ -179,7 +184,7 @@ function evaluateDoWhileStatement(
       errorMessage = 'Η συνθήκη του while πρέπει να είναι λογική τιμή';
       return {} as NumberValue;
     }
-  } while (condition.value);
+  }
   return {} as NumberValue;
 }
 
@@ -189,7 +194,6 @@ function evaluateWhileStatement(ASTnode: any, env: Environment): RuntimeValue {
     errorMessage = 'Η συνθήκη του while πρέπει να είναι λογική τιμή';
     return {} as NumberValue;
   }
-  console.log(condition.type);
   while (condition.value) {
     for (const statement of ASTnode.body) {
       evaluate(statement, env);

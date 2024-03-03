@@ -84,7 +84,7 @@ export default class Parser {
         return this.ParseForStatement();
       case TokenType.While:
         return this.ParseWhileStatement();
-      case TokenType.Repeat:
+      case TokenType.StartLoop:
         return this.ParseDoWhileStatement();
       default:
         return this.ParseExpression();

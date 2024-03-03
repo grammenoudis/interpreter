@@ -51,6 +51,7 @@ export enum TokenType {
   Program,
   LBracket,
   RBracket,
+  StartLoop,
   EOF,
 }
 const KEYWORDS = new Map<string, TokenType>([
@@ -86,6 +87,7 @@ const KEYWORDS = new Map<string, TokenType>([
   ['ΕΠΑΝΑΛΑΒΕ', TokenType.Repeat],
   ['ΟΣΟ', TokenType.While],
   ['ΤΕΛΟΣ_ΕΠΑΝΑΛΗΨΗΣ', TokenType.EndLoop],
+  ['ΑΡΧΗ_ΕΠΑΝΑΛΗΨΗΣ', TokenType.StartLoop],
 ]);
 
 export interface Token {
