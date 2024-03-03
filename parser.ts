@@ -82,9 +82,29 @@ export default class Parser {
         return this.ParseReadInputStatement();
       case TokenType.For:
         return this.ParseForStatement();
+      case TokenType.While:
+        return this.ParseWhileStatement();
       default:
         return this.ParseExpression();
     }
+  }
+
+  private ParseWhileStatement(): Statement {
+    this.advance();
+    let condition = this.ParseExpression();
+    this.expect(TokenType.Repeat, 'Expected REPEAT');
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
+    let body: Statement[] = [];
+    while (this.at().type != TokenType.EndLoop) {
+      body.push(this.ParseStatement());
+    }
+    this.advance();
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
+    return {
+      type: 'WhileStatement',
+      condition: condition,
+      body: body,
+    } as Statement;
   }
 
   private ParseForStatement(): Statement {
@@ -101,7 +121,7 @@ export default class Parser {
     }
     this.expect(TokenType.EndOfLine, 'Expected end of line');
     let body: Statement[] = [];
-    while (this.at().type != TokenType.EndFor) {
+    while (this.at().type != TokenType.EndLoop) {
       body.push(this.ParseStatement());
     }
     this.advance();

@@ -19,7 +19,8 @@ export type NodeTypes =
   | 'CaseStatement'
   | 'SwitchStatement'
   | 'ReadInputStatement'
-  | 'ForStatement';
+  | 'ForStatement'
+  | 'WhileStatement';
 
 export interface Statement {
   type: NodeTypes;
@@ -96,5 +97,11 @@ export interface ForStatement extends Statement {
   start: NumericLiteral;
   end: NumericLiteral;
   step: NumericLiteral;
+  body: Statement[];
+}
+
+export interface WhileStatement extends Statement {
+  type: 'WhileStatement';
+  condition: Expression;
   body: Statement[];
 }
