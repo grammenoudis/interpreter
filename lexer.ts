@@ -212,7 +212,7 @@ export function tokenize(input: string): Token[] | string {
           }
         }
 
-        let reserved = KEYWORDS.get(charactersToBuild);
+        let reserved = KEYWORDS.get(charactersToBuild.toUpperCase());
         if (reserved !== undefined) {
           tokens.push(
             makeToken(charactersToBuild, reserved as TokenType, line, column)

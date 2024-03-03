@@ -225,6 +225,7 @@ export default class Parser {
     } as Statement;
   }
 
+  //TODO: Make this function more readable by breaking it into a smaller function that handles the parsing by beign called 4 times instead
   private ParseDeclarationOfVariables(): Statement {
     // this.advance();
     // this.expect(TokenType.EndOfLine, 'Expected end of line');

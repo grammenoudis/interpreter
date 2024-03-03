@@ -101,7 +101,6 @@ export default class Environment {
     if (index) {
       const arr = env.arrays.get(name);
       if (arr) {
-        console.table(this.arrays.get(name));
         return arr[index];
       }
       throw new Error(`Array ${name} not declared`);
