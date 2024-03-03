@@ -153,7 +153,7 @@ function evaluateForStatement(ASTnode: any, env: Environment): RuntimeValue {
     return {} as NumberValue;
   }
 
-  while (start.value != (end.value as any) + 1) {
+  while (start.value != (end.value as any) + (step.value as any)) {
     for (const statement of ASTnode.body) {
       evaluate(statement, env);
     }
