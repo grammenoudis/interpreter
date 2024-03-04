@@ -191,6 +191,10 @@ export function tokenize(input: string): Token[] | string {
         break;
       case ' ':
         break;
+      case '!':
+        src.shift();
+        while (src[0] != '\n') src.shift();
+        break;
       default:
         let charactersToBuild: string = char;
         let isExpectingString: boolean = char == `'`;
