@@ -22,7 +22,9 @@ export type NodeTypes =
   | 'ForStatement'
   | 'WhileStatement'
   | 'DoWhileStatement'
-  | 'FunctionDeclaration';
+  | 'FunctionDeclaration'
+  | 'FunctionCall'
+  | 'StartStatement';
 
 export interface Statement {
   type: NodeTypes;

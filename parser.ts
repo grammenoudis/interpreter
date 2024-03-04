@@ -672,7 +672,7 @@ export default class Parser {
       case TokenType.Start:
         this.advance();
         this.expect(TokenType.EndOfLine, 'Expected end of line');
-        return this.ParseStatement();
+        return { type: 'StartStatement', value: 'ΑΡΧΗ' } as Statement;
       case TokenType.Not:
         return this.ParseNotExpression();
       case TokenType.EndOfProgram:

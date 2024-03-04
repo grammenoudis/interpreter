@@ -1,3 +1,4 @@
+import { FunctionDeclaration } from '../ast';
 import { RuntimeValue } from './values';
 
 export default class Environment {
@@ -7,6 +8,7 @@ export default class Environment {
   private constants: Map<string, RuntimeValue>;
   private arrays: Map<string, RuntimeValue[]>;
   private arrayLengths: Map<string, number>;
+  private functions: Map<string, FunctionDeclaration>;
 
   constructor(parentENV?: Environment) {
     this.parent = parentENV;
@@ -15,6 +17,7 @@ export default class Environment {
     this.constants = new Map<string, RuntimeValue>();
     this.arrays = new Map<string, RuntimeValue[]>();
     this.arrayLengths = new Map<string, number>();
+    this.functions = new Map<string, FunctionDeclaration>();
   }
 
   public declareVariable(
@@ -119,5 +122,24 @@ export default class Environment {
       return env.variableTypes.get(name) as string;
     }
     throw new Error(`Variable ${name} not declared`);
+  }
+
+  public lookUpFunction(name: string): FunctionDeclaration {
+    if (this.functions.has(name)) {
+      return this.functions.get(name) as FunctionDeclaration;
+    }
+    if (this.parent) {
+      return this.parent.lookUpFunction(name);
+    }
+    throw new Error(`Function ${name} not declared`);
+  }
+
+  public declareFunction(name: string, func: FunctionDeclaration): void {
+    if (this.functions.has(name)) {
+      console.error(`Function ${name} already declared`);
+      process.exit(1);
+    }
+    this.functions.set(name, func);
+    return;
   }
 }

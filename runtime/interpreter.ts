@@ -16,6 +16,10 @@ var errorMessage: string | undefined;
 
 function evaluateProgram(program: Program, env: Environment): any {
   // let lastEvaluated: RuntimeValue = { type: 'number', value: 0 } as NumberValue;
+  program.functions.forEach((func) => {
+    env.declareFunction(func.name, func);
+  });
+
   for (const statement of program.body) {
     evaluate(statement, env);
     if (errorMessage) return errorMessage;
@@ -271,6 +275,62 @@ function evaluateIfStatement(ASTnode: any, env: Environment): RuntimeValue {
   return {} as NumberValue;
 }
 
+function evaluateFunctionCall(ASTnode: any, env: Environment): RuntimeValue {
+  const func = env.lookUpFunction(ASTnode.identifier);
+  if (!func) {
+    errorMessage = `Undefined function: ${ASTnode.identifier}`;
+    return {} as NumberValue;
+  }
+  if (func.arguments.length !== ASTnode.arguments.length) {
+    errorMessage = `Function ${ASTnode.identifier} takes ${func.arguments.length} arguments, ${ASTnode.arguments.length} given`;
+    return {} as NumberValue;
+  }
+  const newEnv = new Environment();
+  let returnType;
+  switch (func.returnType) {
+    case 'ΑΚΕΡΑΙΑ':
+      returnType = 'Integer';
+      break;
+    case 'ΠΡΑΓΜΑΤΙΚΗ':
+      returnType = 'Real';
+      break;
+    case 'ΑΛΦΑΡΙΘΜΗΤΙΚΗ':
+      returnType = 'String';
+      break;
+    case 'ΛΟΓΙΚΗ':
+      returnType = 'Boolean';
+      break;
+  }
+  if (!returnType) {
+    errorMessage = `Unknown return type: ${func.returnType}`;
+    return {} as NumberValue;
+  }
+  newEnv.declareVariable(func.name, returnType);
+
+  for (const statement of func.body) {
+    if (statement.type === 'StartStatement') {
+      for (let i = 0; i < func.arguments.length; i++) {
+        newEnv.assignVariable(
+          (func.arguments[i] as any).value,
+          evaluate(ASTnode.arguments[i], env)
+        );
+      }
+    }
+    evaluate(statement, newEnv);
+  }
+  let returnValue = newEnv.lookUpVariable(func.name);
+  if (returnValue.type === 'number') {
+    if (
+      (Number.isInteger(returnValue.value) && returnType === 'Real') ||
+      (!Number.isInteger(returnValue.value) && returnType === 'Integer')
+    ) {
+      errorMessage = `Αναμενόταν ${returnType}, αλλά επεστράφη άλλος τύπος`;
+      return {} as NumberValue;
+    }
+  }
+  return returnValue;
+}
+
 export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
   switch (ASTnode.type) {
     case 'Identifier':
@@ -368,6 +428,10 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       return evaluateWhileStatement(ASTnode as any, env);
     case 'DoWhileStatement':
       return evaluateDoWhileStatement(ASTnode as any, env);
+    case 'FunctionCall':
+      return evaluateFunctionCall(ASTnode as any, env);
+    case 'StartStatement':
+      return {} as NumberValue;
     default:
       errorMessage = `Unknown AST node type: ${(ASTnode as any).type}`;
       return {} as NumberValue;
