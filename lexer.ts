@@ -52,6 +52,12 @@ export enum TokenType {
   LBracket,
   RBracket,
   StartLoop,
+  Function,
+  EndFunction,
+  ReturnType,
+  Procedure,
+  EndProcedure,
+  Call,
   EOF,
 }
 const KEYWORDS = new Map<string, TokenType>([
@@ -88,6 +94,15 @@ const KEYWORDS = new Map<string, TokenType>([
   ['ΟΣΟ', TokenType.While],
   ['ΤΕΛΟΣ_ΕΠΑΝΑΛΗΨΗΣ', TokenType.EndLoop],
   ['ΑΡΧΗ_ΕΠΑΝΑΛΗΨΗΣ', TokenType.StartLoop],
+  ['ΔΙΑΔΙΚΑΣΙΑ', TokenType.Procedure],
+  ['ΤΕΛΟΣ_ΔΙΑΔΙΚΑΣΙΑΣ', TokenType.EndProcedure],
+  ['ΚΑΛΕΣΕ', TokenType.Call],
+  ['ΣΥΝΑΡΤΗΣΗ', TokenType.Function],
+  ['ΤΕΛΟΣ_ΣΥΝΑΡΤΗΣΗΣ', TokenType.EndFunction],
+  ['ΑΚΕΡΑΙΑ', TokenType.ReturnType],
+  ['ΠΡΑΓΜΑΤΙΚΗ', TokenType.ReturnType],
+  ['ΑΛΦΑΡΙΘΜΗΤΙΚΗ', TokenType.ReturnType],
+  ['ΛΟΓΙΚΗ', TokenType.ReturnType],
 ]);
 
 export interface Token {

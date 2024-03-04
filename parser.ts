@@ -1,6 +1,7 @@
 import {
   BinaryExpression,
   Expression,
+  FunctionDeclaration,
   Identifier,
   NumericLiteral,
   Program,
@@ -43,6 +44,7 @@ export default class Parser {
     const program: Program = {
       type: 'Program',
       body: [],
+      functions: new Map<string, FunctionDeclaration>(),
     };
 
     while (
@@ -52,8 +54,28 @@ export default class Parser {
     ) {
       program.body.push(this.ParseStatement());
     }
+    if (this.at().type == TokenType.EndOfProgram) this.advance();
     if (errorMessage) return errorMessage;
 
+    while (this.at().type != TokenType.EOF) {
+      while (this.at().type == TokenType.EndOfLine) this.advance();
+      let token = this.at().type;
+      switch (token) {
+        case TokenType.Function:
+          let functionDeclaration = this.ParseFunctionDeclaration() as any;
+          program.functions.set(
+            functionDeclaration.name,
+            functionDeclaration as FunctionDeclaration
+          );
+          break;
+        default:
+          errorMessage = `Unexpected token ${this.at().value} at line ${
+            this.at().line
+          } column ${this.at().column}`;
+          break;
+      }
+    }
+    console.table(program.functions.get('abs'));
     return program;
   }
 
@@ -89,6 +111,37 @@ export default class Parser {
       default:
         return this.ParseExpression();
     }
+  }
+
+  private ParseFunctionDeclaration(): Statement {
+    this.advance();
+    let name = this.advance().value;
+    this.expect(TokenType.LParenthesis, 'Expected open parenthesis');
+    let args: Identifier[] = [];
+    while (this.at().type != TokenType.RParenthesis) {
+      args.push(
+        this.expect(TokenType.Identifier, 'Expected identifier') as any
+      );
+      if (this.at().type == TokenType.RParenthesis) break;
+      this.expect(TokenType.Seperator, 'Expected comma');
+    }
+    this.expect(TokenType.RParenthesis, 'Expected closed parenthesis');
+    this.expect(TokenType.Colon, 'Expected colon');
+    let returnType = this.advance().value;
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
+    let body: Statement[] = [];
+    while (this.at().type != TokenType.EndFunction) {
+      body.push(this.ParseStatement());
+    }
+    this.advance();
+    if (this.at().type == TokenType.EndOfLine) this.advance();
+    return {
+      type: 'FunctionDeclaration',
+      name: name,
+      body: body,
+      returnType: returnType,
+      arguments: args,
+    } as Statement;
   }
 
   private ParseDoWhileStatement(): Statement {
@@ -537,6 +590,23 @@ export default class Parser {
     return left;
   }
 
+  private ParseFunctionCall(): Expression {
+    const identifier = this.advance().value;
+    this.expect(TokenType.LParenthesis, 'Expected open parenthesis');
+    let args: Expression[] = [];
+    while (this.at().type != TokenType.RParenthesis) {
+      args.push(this.ParseExpression());
+      if (this.at().type == TokenType.RParenthesis) break;
+      this.expect(TokenType.Seperator, 'Expected comma');
+    }
+    this.expect(TokenType.RParenthesis, 'Expected closed parenthesis');
+    return {
+      type: 'FunctionCall',
+      identifier: identifier,
+      arguments: args,
+    } as any;
+  }
+
   private ParsePrimaryExpression(): any {
     if (this.at().value == '-' || this.at().value == '+') {
       const operator = this.advance().value;
@@ -550,6 +620,9 @@ export default class Parser {
     const tk = this.at().type;
     switch (tk) {
       case TokenType.Identifier:
+        if (this.tokens[1].type == TokenType.LParenthesis)
+          return this.ParseFunctionCall();
+
         let index;
         if (this.at().arrayCell) {
           const parser = new Parser();

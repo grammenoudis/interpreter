@@ -21,7 +21,8 @@ export type NodeTypes =
   | 'ReadInputStatement'
   | 'ForStatement'
   | 'WhileStatement'
-  | 'DoWhileStatement';
+  | 'DoWhileStatement'
+  | 'FunctionDeclaration';
 
 export interface Statement {
   type: NodeTypes;
@@ -30,6 +31,15 @@ export interface Statement {
 export interface Program extends Statement {
   type: 'Program';
   body: Statement[];
+  functions: Map<string, FunctionDeclaration>;
+}
+
+export interface FunctionDeclaration extends Statement {
+  type: 'FunctionDeclaration';
+  name: string;
+  body: Statement[];
+  returnType: string;
+  arguments: string[];
 }
 
 export interface Expression extends Statement {}

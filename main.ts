@@ -9,19 +9,29 @@ export function run(isCli = false, src = '') {
   if (isCli) {
     const args = process.argv.slice(2);
     const absolutePath = path.resolve(args[0]);
-    fs.writeFile('output.txt', '', function(err) { });
+    fs.writeFile('output.txt', '', function (err) {});
     src = fs.readFileSync(absolutePath, 'utf-8');
   }
   const env = new Environment();
   const parser = new Parser();
   const program = parser.ProduceAST(src);
 
+  function replacer(key: any, value: any) {
+    if (value instanceof Map) {
+      return {
+        ...Array.from(value.entries()),
+      };
+    } else {
+      return value;
+    }
+  }
+
   var errorMessage: string | undefined;
   var res;
   if (typeof program === 'string') {
     errorMessage = program;
   } else {
-    console.log(JSON.stringify(program, null, 2));
+    console.log(JSON.stringify(program, replacer, 2));
     res = evaluate(program, env) as any;
     if (typeof res === 'string') {
       errorMessage = res;
