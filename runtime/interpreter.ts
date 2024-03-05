@@ -315,6 +315,12 @@ function evaluateFunctionCall(ASTnode: any, env: Environment): RuntimeValue {
           evaluate(ASTnode.arguments[i], env)
         );
       }
+    } else if (
+      statement.type === 'PrintStatement' ||
+      statement.type === 'ReadInputStatement'
+    ) {
+      errorMessage = 'Δεν επιτρέπεται η χρήση ΔΙΑΒΑΣΕ/ΓΡΑΨΕ στην συνάρτηση';
+      return {} as NumberValue;
     }
     evaluate(statement, newEnv);
   }
