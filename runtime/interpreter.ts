@@ -314,30 +314,23 @@ function evaluateFunctionCall(ASTnode: any, env: Environment): RuntimeValue {
           newEnv.arrayLookup((func.arguments[i] as any).value) &&
           (func.arguments[i] as any)
         ) {
-          let content = env.arrayLookup((ASTnode.arguments[i] as any).name);
+          let content = env
+            .arrayLookup((ASTnode.arguments[i] as any).name)
+            .slice();
           newEnv.setArrayArgument((func.arguments[i] as any).value, content);
-          // console.log(
-          //   env.lookUpFunction(ASTnode.arguments[i].name),
-          //   newEnv.lookUpFunction(ASTnode.arguments[i].name)
-          // );
-          // console.log(
-          //   content,
-          //   newEnv.arrayLookup((ASTnode.arguments[i] as any).name)
-          // );
-          // env.setArrayArgument((func.arguments[i] as any).value, content);
         } else
           newEnv.assignVariable(
             (func.arguments[i] as any).value,
             evaluate(ASTnode.arguments[i], env)
           );
       }
-    } //else if (
-    //   statement.type === 'PrintStatement' ||
-    //   statement.type === 'ReadInputStatement'
-    // ) {
-    //   errorMessage = 'Δεν επιτρέπεται η χρήση ΔΙΑΒΑΣΕ/ΓΡΑΨΕ στην συνάρτηση';
-    //   return {} as NumberValue;
-    // }
+    } else if (
+      statement.type === 'PrintStatement' ||
+      statement.type === 'ReadInputStatement'
+    ) {
+      errorMessage = 'Δεν επιτρέπεται η χρήση ΔΙΑΒΑΣΕ/ΓΡΑΨΕ στην συνάρτηση';
+      return {} as NumberValue;
+    }
     evaluate(statement, newEnv);
   }
   let returnValue = newEnv.lookUpVariable(func.name);
