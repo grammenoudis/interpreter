@@ -70,7 +70,11 @@ export default class Environment {
       throw new Error(`Array ${name} not declared`);
     }
 
-    if (
+    if (this.constants.has(name)) {
+      throw new Error(`Cannot assign to constant ${name}`);
+    } else if (!this.variableTypes.get(name)) {
+      throw new Error(`Variable ${name} not declared`);
+    } else if (
       this.variableTypes.get(name) !== value.type &&
       value.type !== 'number'
     ) {

@@ -16,7 +16,6 @@ var outputList: any = [];
 var errorMessage: string | undefined;
 
 function evaluateProgram(program: Program, env: Environment): any {
-  // let lastEvaluated: RuntimeValue = { type: 'number', value: 0 } as NumberValue;
   program.functions.forEach((func) => {
     env.declareFunction(func.name, func);
   });
@@ -28,7 +27,6 @@ function evaluateProgram(program: Program, env: Environment): any {
   for (const statement of program.body) {
     evaluate(statement, env);
     if (errorMessage) return errorMessage;
-    // console.log(lastEvaluated);
   }
   return outputList;
 }

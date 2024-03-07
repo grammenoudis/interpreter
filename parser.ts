@@ -233,6 +233,7 @@ export default class Parser {
     this.expect(TokenType.EndOfLine, 'Expected end of line');
     let body: Statement[] = [];
     while (this.at().type != TokenType.EndLoop) {
+      console.log(this.at());
       body.push(this.ParseStatement());
     }
     this.advance();
