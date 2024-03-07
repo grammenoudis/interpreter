@@ -310,18 +310,34 @@ function evaluateFunctionCall(ASTnode: any, env: Environment): RuntimeValue {
   for (const statement of func.body) {
     if (statement.type === 'StartStatement') {
       for (let i = 0; i < func.arguments.length; i++) {
-        newEnv.assignVariable(
-          (func.arguments[i] as any).value,
-          evaluate(ASTnode.arguments[i], env)
-        );
+        if (
+          newEnv.arrayLookup((func.arguments[i] as any).value) &&
+          (func.arguments[i] as any)
+        ) {
+          let content = env.arrayLookup((ASTnode.arguments[i] as any).name);
+          newEnv.setArrayArgument((func.arguments[i] as any).value, content);
+          // console.log(
+          //   env.lookUpFunction(ASTnode.arguments[i].name),
+          //   newEnv.lookUpFunction(ASTnode.arguments[i].name)
+          // );
+          // console.log(
+          //   content,
+          //   newEnv.arrayLookup((ASTnode.arguments[i] as any).name)
+          // );
+          // env.setArrayArgument((func.arguments[i] as any).value, content);
+        } else
+          newEnv.assignVariable(
+            (func.arguments[i] as any).value,
+            evaluate(ASTnode.arguments[i], env)
+          );
       }
-    } else if (
-      statement.type === 'PrintStatement' ||
-      statement.type === 'ReadInputStatement'
-    ) {
-      errorMessage = 'Δεν επιτρέπεται η χρήση ΔΙΑΒΑΣΕ/ΓΡΑΨΕ στην συνάρτηση';
-      return {} as NumberValue;
-    }
+    } //else if (
+    //   statement.type === 'PrintStatement' ||
+    //   statement.type === 'ReadInputStatement'
+    // ) {
+    //   errorMessage = 'Δεν επιτρέπεται η χρήση ΔΙΑΒΑΣΕ/ΓΡΑΨΕ στην συνάρτηση';
+    //   return {} as NumberValue;
+    // }
     evaluate(statement, newEnv);
   }
   let returnValue = newEnv.lookUpVariable(func.name);
@@ -393,8 +409,9 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       let stringToPrint = '';
       for (const statement of (ASTnode as any).value) {
         let res = evaluate(statement, env);
-        if (res.type == 'Boolean') res.value = res.value ? 'ΑΛΗΘΗΣ' : 'ΨΕΥΔΗΣ';
-        stringToPrint = stringToPrint + res.value + ' ';
+        if (res.type == 'Boolean')
+          stringToPrint += res.value ? 'ΑΛΗΘΗΣ ' : 'ΨΕΥΔΗΣ ';
+        else stringToPrint += res.value + ' ';
       }
       outputList.push(stringToPrint);
       return { type: 'String', value: stringToPrint } as RuntimeValue;

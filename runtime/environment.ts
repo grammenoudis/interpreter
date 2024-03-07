@@ -63,7 +63,6 @@ export default class Environment {
       }
       if (arr) {
         arr[index.value as number] = value;
-        // console.log(arr[index.value as number]);
         return value;
       }
       throw new Error(`Array ${name} not declared`);
@@ -141,5 +140,21 @@ export default class Environment {
     }
     this.functions.set(name, func);
     return;
+  }
+
+  public setArrayArgument(name: string, content: any): void {
+    console.log(content);
+    this.arrays.set(name, content);
+    return;
+  }
+
+  public arrayLookup(name: string): any {
+    if (this.arrays.has(name)) {
+      return this.arrays.get(name) as RuntimeValue[];
+    }
+    if (this.parent) {
+      return this.parent.arrayLookup(name);
+    }
+    return undefined;
   }
 }
