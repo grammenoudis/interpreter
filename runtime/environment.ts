@@ -164,7 +164,6 @@ export default class Environment {
   }
 
   public setArrayArgument(name: string, content: any): void {
-    console.log(content);
     this.arrays.set(name, content);
     return;
   }

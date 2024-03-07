@@ -356,7 +356,6 @@ function evaluateProcedureCall(
   env: Environment
 ): RuntimeValue {
   const procedure = env.lookUpProcedure(ASTnode.identifier);
-  console.log(ASTnode);
   if (!procedure) {
     errorMessage = `Undefined procedure: ${ASTnode.identifier}`;
     return {} as RuntimeValue;
