@@ -1,4 +1,4 @@
-import { FunctionDeclaration } from '../ast';
+import { FunctionDeclaration, ProcedureDeclaration } from '../ast';
 import { RuntimeValue } from './values';
 
 export default class Environment {
@@ -9,6 +9,7 @@ export default class Environment {
   private arrays: Map<string, RuntimeValue[]>;
   private arrayLengths: Map<string, number>;
   private functions: Map<string, FunctionDeclaration>;
+  private procedures: Map<string, ProcedureDeclaration>;
 
   constructor(parentENV?: Environment) {
     this.parent = parentENV;
@@ -18,6 +19,7 @@ export default class Environment {
     this.arrays = new Map<string, RuntimeValue[]>();
     this.arrayLengths = new Map<string, number>();
     this.functions = new Map<string, FunctionDeclaration>();
+    this.procedures = new Map<string, ProcedureDeclaration>();
   }
 
   public declareVariable(
@@ -133,12 +135,31 @@ export default class Environment {
     throw new Error(`Function ${name} not declared`);
   }
 
+  public lookUpProcedure(name: string): ProcedureDeclaration | undefined {
+    if (this.procedures.has(name)) {
+      return this.procedures.get(name) as ProcedureDeclaration;
+    }
+    if (this.parent) {
+      return this.parent.lookUpProcedure(name);
+    }
+    return undefined;
+  }
+
   public declareFunction(name: string, func: FunctionDeclaration): void {
     if (this.functions.has(name)) {
       console.error(`Function ${name} already declared`);
       process.exit(1);
     }
     this.functions.set(name, func);
+    return;
+  }
+
+  public declareProcedure(name: string, proc: ProcedureDeclaration): void {
+    if (this.procedures.has(name)) {
+      console.error(`Procedure ${name} already declared`);
+      process.exit(1);
+    }
+    this.procedures.set(name, proc);
     return;
   }
 

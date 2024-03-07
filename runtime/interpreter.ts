@@ -5,6 +5,7 @@ import {
   Identifier,
   NodeTypes,
   NumericLiteral as NumericLiteral,
+  ProcedureCall,
   Program,
   Statement,
 } from '../ast';
@@ -18,6 +19,10 @@ function evaluateProgram(program: Program, env: Environment): any {
   // let lastEvaluated: RuntimeValue = { type: 'number', value: 0 } as NumberValue;
   program.functions.forEach((func) => {
     env.declareFunction(func.name, func);
+  });
+
+  program.procedures.forEach((proc) => {
+    env.declareProcedure(proc.name, proc);
   });
 
   for (const statement of program.body) {
@@ -346,6 +351,53 @@ function evaluateFunctionCall(ASTnode: any, env: Environment): RuntimeValue {
   return returnValue;
 }
 
+function evaluateProcedureCall(
+  ASTnode: ProcedureCall,
+  env: Environment
+): RuntimeValue {
+  const procedure = env.lookUpProcedure(ASTnode.identifier);
+  console.log(ASTnode);
+  if (!procedure) {
+    errorMessage = `Undefined procedure: ${ASTnode.identifier}`;
+    return {} as RuntimeValue;
+  }
+  if (procedure.arguments.length !== ASTnode.arguments.length) {
+    errorMessage = `Procedure ${ASTnode.identifier} takes ${procedure.arguments.length} arguments, ${ASTnode.arguments.length} given`;
+    return {} as RuntimeValue;
+  }
+
+  const newEnv = new Environment();
+  for (const statement of procedure.body) {
+    if (statement.type === 'StartStatement') {
+      for (let i = 0; i < procedure.arguments.length; i++) {
+        if (
+          newEnv.arrayLookup((procedure.arguments[i] as any).value) &&
+          (procedure.arguments[i] as any)
+        ) {
+          let content = env.arrayLookup((ASTnode.arguments[i] as any).name);
+          newEnv.setArrayArgument(
+            (procedure.arguments[i] as any).value,
+            content
+          );
+        } else
+          newEnv.assignVariable(
+            (procedure.arguments[i] as any).value,
+            evaluate(ASTnode.arguments[i], env)
+          );
+      }
+    }
+    evaluate(statement, newEnv);
+  }
+  //return values of procedure to the variables of the program that called the procedure
+  for (let i = 0; i < procedure.arguments.length; i++) {
+    if (!newEnv.arrayLookup(procedure.arguments[i] as any)) {
+      let value = newEnv.lookUpVariable((procedure.arguments[i] as any).value);
+      env.assignVariable((procedure.arguments[i] as any).value, value);
+    }
+  }
+  return {} as RuntimeValue;
+}
+
 export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
   switch (ASTnode.type) {
     case 'Identifier':
@@ -446,6 +498,8 @@ export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
       return evaluateDoWhileStatement(ASTnode as any, env);
     case 'FunctionCall':
       return evaluateFunctionCall(ASTnode as any, env);
+    case 'ProcedureCall':
+      return evaluateProcedureCall(ASTnode as any, env);
     case 'StartStatement':
       return {} as NumberValue;
     default:

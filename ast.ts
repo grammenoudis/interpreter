@@ -24,7 +24,9 @@ export type NodeTypes =
   | 'DoWhileStatement'
   | 'FunctionDeclaration'
   | 'FunctionCall'
-  | 'StartStatement';
+  | 'StartStatement'
+  | 'ProcedureDeclaration'
+  | 'ProcedureCall';
 
 export interface Statement {
   type: NodeTypes;
@@ -34,6 +36,7 @@ export interface Program extends Statement {
   type: 'Program';
   body: Statement[];
   functions: Map<string, FunctionDeclaration>;
+  procedures: Map<string, ProcedureDeclaration>;
 }
 
 export interface FunctionDeclaration extends Statement {
@@ -123,4 +126,17 @@ export interface DoWhileStatement extends Statement {
   type: 'DoWhileStatement';
   condition: Expression;
   body: Statement[];
+}
+
+export interface ProcedureDeclaration extends Statement {
+  type: 'ProcedureDeclaration';
+  name: string;
+  body: Statement[];
+  arguments: string[];
+}
+
+export interface ProcedureCall extends Statement {
+  type: 'ProcedureCall';
+  identifier: string;
+  arguments: Identifier[];
 }

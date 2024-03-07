@@ -4,6 +4,7 @@ import {
   FunctionDeclaration,
   Identifier,
   NumericLiteral,
+  ProcedureDeclaration,
   Program,
   Statement,
   UnaryExpression,
@@ -45,6 +46,7 @@ export default class Parser {
       type: 'Program',
       body: [],
       functions: new Map<string, FunctionDeclaration>(),
+      procedures: new Map<string, ProcedureDeclaration>(),
     };
 
     while (
@@ -68,6 +70,14 @@ export default class Parser {
             functionDeclaration as FunctionDeclaration
           );
           break;
+        case TokenType.Procedure:
+          console.error('test');
+          let procedureDeclaration = this.ParseProcedureDeclaration() as any;
+          program.procedures.set(
+            procedureDeclaration.name,
+            procedureDeclaration as ProcedureDeclaration
+          );
+          break;
         default:
           errorMessage = `Unexpected token ${this.at().value} at line ${
             this.at().line
@@ -75,7 +85,6 @@ export default class Parser {
           break;
       }
     }
-    console.table(program.functions.get('abs'));
     return program;
   }
 
@@ -108,9 +117,39 @@ export default class Parser {
         return this.ParseWhileStatement();
       case TokenType.StartLoop:
         return this.ParseDoWhileStatement();
+      case TokenType.Call:
+        return this.ParseProcedureCall();
       default:
         return this.ParseExpression();
     }
+  }
+
+  private ParseProcedureDeclaration(): Statement {
+    this.advance();
+    let name = this.advance().value;
+    this.expect(TokenType.LParenthesis, 'Expected open parenthesis');
+    let args: Identifier[] = [];
+    while (this.at().type != TokenType.RParenthesis) {
+      args.push(
+        this.expect(TokenType.Identifier, 'Expected identifier') as any
+      );
+      if (this.at().type == TokenType.RParenthesis) break;
+      this.expect(TokenType.Seperator, 'Expected comma');
+    }
+    this.expect(TokenType.RParenthesis, 'Expected closed parenthesis');
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
+    let body: Statement[] = [];
+    while (this.at().type != TokenType.EndProcedure) {
+      body.push(this.ParseStatement());
+    }
+    this.advance();
+    if (this.at().type == TokenType.EndOfLine) this.advance();
+    return {
+      type: 'ProcedureDeclaration',
+      name: name,
+      body: body,
+      arguments: args,
+    } as Statement;
   }
 
   private ParseFunctionDeclaration(): Statement {
@@ -605,6 +644,25 @@ export default class Parser {
       identifier: identifier,
       arguments: args,
     } as any;
+  }
+
+  private ParseProcedureCall(): Statement {
+    this.advance();
+    const identifier = this.advance().value;
+    this.expect(TokenType.LParenthesis, 'Expected open parenthesis');
+    let args: Expression[] = [];
+    while (this.at().type != TokenType.RParenthesis) {
+      args.push(this.ParseExpression());
+      if (this.at().type == TokenType.RParenthesis) break;
+      this.expect(TokenType.Seperator, 'Expected comma');
+    }
+    this.expect(TokenType.RParenthesis, 'Expected closed parenthesis');
+    this.expect(TokenType.EndOfLine, 'Expected end of line');
+    return {
+      type: 'ProcedureCall',
+      identifier: identifier,
+      arguments: args,
+    } as Statement;
   }
 
   private ParsePrimaryExpression(): any {
