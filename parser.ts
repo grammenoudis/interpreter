@@ -232,7 +232,11 @@ export default class Parser {
     }
     this.expect(TokenType.EndOfLine, 'Expected end of line');
     let body: Statement[] = [];
-    while (this.at().type != TokenType.EndLoop) {
+    while (
+      this.at().type != TokenType.EndLoop &&
+      this.NotEOF() &&
+      !errorMessage
+    ) {
       console.log(this.at());
       body.push(this.ParseStatement());
     }
@@ -488,7 +492,6 @@ export default class Parser {
     }
     const identifier = this.expect(TokenType.Identifier, 'Expected identifier');
     this.expect(TokenType.Assign, 'Expected assignment operator');
-
     let value: Expression = this.ParseExpression();
 
     const newLine = this.tokens.shift();
