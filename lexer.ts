@@ -130,11 +130,20 @@ function isWhitespace(char: string): boolean {
 
 var errorMessage: string | void;
 
+// Function to normalize line endings
+function normalizeInput(input: string): string {
+  // Replace all CRLF with LF
+  return input.replace(/\r\n/g, '\n');
+}
+
 export function tokenize(input: string): Token[] | string {
+  // Normalize input first
+  input = normalizeInput(input);
+  
   const tokens: Token[] = [];
   const src: string[] = input.split('');
 
-  let line: number = 2;
+  let line: number = 1; // Starting from line 1 is more conventional
   let column: number = 0;
   while (src.length > 0 && !errorMessage) {
     const char = src.shift()!;
@@ -185,15 +194,24 @@ export function tokenize(input: string): Token[] | string {
         break;
       case '\n':
         tokens.push(makeToken(char, TokenType.EndOfLine, line, column));
+        line++;
+        column = -1; // Will be incremented to 0 at the end of the loop
+        break;
+      case '\r':
+        // Skip carriage returns as they are normalized to \n
+        column--; // Negate the column increment that happens at the end
         break;
       case ':':
         tokens.push(makeToken(char, TokenType.Colon, line, column));
         break;
       case ' ':
+      case '\t':
+        // Just skip whitespace
         break;
       case '!':
+        // Comment handling
         src.shift();
-        while (src[0] != '\n') src.shift();
+        while (src.length > 0 && src[0] != '\n') src.shift();
         break;
       default:
         let charactersToBuild: string = char;
@@ -201,23 +219,25 @@ export function tokenize(input: string): Token[] | string {
         let arrayCell = '';
 
         if (isExpectingString) {
-          while (src[0] !== '\n' && src[0] !== "'") {
+          while (src.length > 0 && src[0] !== '\n' && src[0] !== "'") {
             charactersToBuild += src.shift();
             column++;
           }
-          if (src[0] === `'`) {
+          if (src.length > 0 && src[0] === `'`) {
             charactersToBuild += src.shift();
             column++;
+          } else {
+            errorMessage = `Λάθος στην γραμμή ${line}, στήλη ${column}, δεν έχει κλείσει το απόστροφο`;
           }
         } else {
           while (
             (src.length > 0 && src[0].match(/[a-zA-ZΑ-Ωα-ω0-9.]/)) ||
-            src[0] === '_' ||
-            src[0] === '['
+            (src.length > 0 && (src[0] === '_' || src[0] === '['))
           ) {
-            if (src[0] === '[') {
+            if (src.length > 0 && src[0] === '[') {
               src.shift();
               while (
+                src.length > 0 && 
                 (src[0] as string) !== ']' &&
                 (src[0] as string) !== '\n'
               ) {
@@ -229,8 +249,8 @@ export function tokenize(input: string): Token[] | string {
                 }
               }
               // Shift the closing bracket
-              src.shift();
-            } else if (!isWhitespace(src[0])) {
+              if (src.length > 0) src.shift();
+            } else if (src.length > 0 && !isWhitespace(src[0])) {
               charactersToBuild += src.shift();
               column++;
             }
@@ -245,15 +265,16 @@ export function tokenize(input: string): Token[] | string {
         } else if (charactersToBuild[0] === "'") {
           if (charactersToBuild[charactersToBuild.length - 1] !== "'") {
             errorMessage = `Λάθος στην γραμμή ${line}, στήλη ${column}, δεν έχει κλείσει το απόστροφο`;
+          } else {
+            charactersToBuild = charactersToBuild.slice(
+              1,
+              charactersToBuild.length - 1
+            );
+            tokens.push(
+              makeToken(charactersToBuild, TokenType.String, line, column)
+            );
           }
-          charactersToBuild = charactersToBuild.slice(
-            1,
-            charactersToBuild.length - 1
-          );
-          tokens.push(
-            makeToken(charactersToBuild, TokenType.String, line, column)
-          );
-        } else if (!isNaN(charactersToBuild as string as any)) {
+        } else if (!isNaN(Number(charactersToBuild))) {
           if (charactersToBuild.includes('.')) {
             tokens.push(
               makeToken(charactersToBuild, TokenType.RealNumber, line, column)
@@ -264,8 +285,8 @@ export function tokenize(input: string): Token[] | string {
             );
           }
         } else if (charactersToBuild[0].match(/[a-zA-ZΑ-Ωα-ω]/)) {
-          arrayCell = arrayCell + '\n';
           if (arrayCell) {
+            arrayCell = arrayCell + '\n';
             tokens.push(
               makeToken(
                 charactersToBuild,
@@ -276,36 +297,32 @@ export function tokenize(input: string): Token[] | string {
                 arrayCell.slice(0, arrayCell.length - 1)
               )
             );
-          } else
+          } else {
             tokens.push(
               makeToken(charactersToBuild, TokenType.Identifier, line, column)
             );
+          }
         } else {
-          if (char === '"')
+          if (char === '"') {
             errorMessage = `Στην γραμμή ${line}, στήλη ${column}, χρησιμοποίησε απόστροφο αντί για εισαγωγικά`;
-          else
+          } else {
             errorMessage = `Αγνωστος χαρακτήρας: '${char}' στην γραμμή ${line}, στήλη ${column}`;
+          }
         }
     }
     column++;
-    if (char === '\n') {
-      line++;
-      column = 1;
-    }
   }
   tokens.push(makeToken('EOF', TokenType.EOF, line, column));
-  console.log(tokens);
-
-  //remove consequtive newlines (accept only 1 at a time)
-  for (let i = 0; i < tokens.length; i++) {
-    if (tokens[i].type === TokenType.EndOfLine) {
-      if (tokens[i + 1].type === TokenType.EndOfLine) {
-        tokens.splice(i, 1);
-        i--;
-      }
+  
+  // Remove consecutive newlines (accept only 1 at a time)
+  for (let i = 0; i < tokens.length - 1; i++) {
+    if (tokens[i].type === TokenType.EndOfLine && tokens[i + 1].type === TokenType.EndOfLine) {
+      tokens.splice(i, 1);
+      i--;
     }
   }
+  
   if (errorMessage) return errorMessage;
-
+  console.log(JSON.stringify(tokens, null, 2));
   return tokens;
 }

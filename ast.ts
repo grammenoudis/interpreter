@@ -26,6 +26,10 @@ export type NodeTypes =
   | 'FunctionCall'
   | 'StartStatement'
   | 'ProcedureDeclaration'
+  | 'EndOfProgramStatement'
+  | 'ProgramDeclaration'
+  | 'EOFStatement'
+  | 'VariablesSection'
   | 'ProcedureCall';
 
 export interface Statement {

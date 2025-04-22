@@ -4,3 +4,4 @@ output.txt
 keyboard.txt
 build
 .DS_Store
+node_modules

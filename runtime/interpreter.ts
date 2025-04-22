@@ -16,13 +16,20 @@ var outputList: any = [];
 var errorMessage: string | undefined;
 
 function evaluateProgram(program: Program, env: Environment): any {
+  //get rid of first element of the body which is the start statement
+  program.body.shift();
+  //get rid of the 2nd element of the body which is the variables section
+  program.body.shift();
+if(program.functions) {
   program.functions.forEach((func) => {
     env.declareFunction(func.name, func);
   });
-
+}
+  if(program.procedures) {
   program.procedures.forEach((proc) => {
     env.declareProcedure(proc.name, proc);
   });
+  }
 
   for (const statement of program.body) {
     evaluate(statement, env);
@@ -397,6 +404,8 @@ function evaluateProcedureCall(
 
 export function evaluate(ASTnode: Statement, env: Environment): RuntimeValue {
   switch (ASTnode.type) {
+    case 'ProgramDeclaration':
+      return evaluateProgram(ASTnode as Program, env);
     case 'Identifier':
       let arrayIndex;
       if ((ASTnode as any).index)
