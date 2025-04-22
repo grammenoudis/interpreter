@@ -374,17 +374,17 @@ function evaluateProcedureCall(
     if (statement.type === 'StartStatement') {
       for (let i = 0; i < procedure.arguments.length; i++) {
         if (
-          newEnv.arrayLookup((procedure.arguments[i] as any).value) &&
+          newEnv.arrayLookup((procedure.arguments[i] as any).name) &&
           (procedure.arguments[i] as any)
         ) {
           let content = env.arrayLookup((ASTnode.arguments[i] as any).name);
           newEnv.setArrayArgument(
-            (procedure.arguments[i] as any).value,
+            (procedure.arguments[i] as any).name,
             content
           );
         } else
           newEnv.assignVariable(
-            (procedure.arguments[i] as any).value,
+            (procedure.arguments[i] as any).name,
             evaluate(ASTnode.arguments[i], env)
           );
       }
@@ -394,8 +394,8 @@ function evaluateProcedureCall(
   //return values of procedure to the variables of the program that called the procedure
   for (let i = 0; i < procedure.arguments.length; i++) {
     if (!newEnv.arrayLookup(procedure.arguments[i] as any)) {
-      let value = newEnv.lookUpVariable((procedure.arguments[i] as any).value);
-      env.assignVariable((procedure.arguments[i] as any).value, value);
+      let value = newEnv.lookUpVariable((procedure.arguments[i] as any).name);
+      env.assignVariable((procedure.arguments[i] as any).name, value);
     }
   }
   return {} as RuntimeValue;
