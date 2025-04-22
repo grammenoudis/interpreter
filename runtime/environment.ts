@@ -73,6 +73,7 @@ export default class Environment {
     if (this.constants.has(name)) {
       throw new Error(`Cannot assign to constant ${name}`);
     } else if (!this.variableTypes.get(name)) {
+      // console.log(name)
       throw new Error(`Variable ${name} not declared`);
     } else if (
       this.variableTypes.get(name) !== value.type &&

@@ -104,7 +104,11 @@ export default class Parser {
       case TokenType.Constants:
         return this.ParseDeclarationOfConstants();
       case TokenType.Variables:
-        return this.ParseVariablesSection();
+        this.advance(); // Consume the 'Variables' token
+        this.expect(TokenType.EndOfLine, 'Expected end of line');
+        // Skip any additional empty lines
+        while (this.at().type == TokenType.EndOfLine) this.advance();
+        return this.ParseStatement(); // Try parsing next actual statement
       case TokenType.Integers:
       case TokenType.RealNumbers:
       case TokenType.Characters:

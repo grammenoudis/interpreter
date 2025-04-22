@@ -18,8 +18,6 @@ var errorMessage: string | undefined;
 function evaluateProgram(program: Program, env: Environment): any {
   //get rid of first element of the body which is the start statement
   program.body.shift();
-  //get rid of the 2nd element of the body which is the variables section
-  program.body.shift();
 if(program.functions) {
   program.functions.forEach((func) => {
     env.declareFunction(func.name, func);
@@ -292,6 +290,7 @@ function evaluateFunctionCall(ASTnode: any, env: Environment): RuntimeValue {
     return {} as NumberValue;
   }
   if (func.arguments.length !== ASTnode.arguments.length) {
+    console.table(ASTnode.arguments);
     errorMessage = `Function ${ASTnode.identifier} takes ${func.arguments.length} arguments, ${ASTnode.arguments.length} given`;
     return {} as NumberValue;
   }
@@ -321,16 +320,16 @@ function evaluateFunctionCall(ASTnode: any, env: Environment): RuntimeValue {
     if (statement.type === 'StartStatement') {
       for (let i = 0; i < func.arguments.length; i++) {
         if (
-          newEnv.arrayLookup((func.arguments[i] as any).value) &&
+          newEnv.arrayLookup((func.arguments[i] as any).name) &&
           (func.arguments[i] as any)
         ) {
           let content = env
             .arrayLookup((ASTnode.arguments[i] as any).name)
             .slice();
-          newEnv.setArrayArgument((func.arguments[i] as any).value, content);
+          newEnv.setArrayArgument((func.arguments[i] as any).name, content);
         } else
           newEnv.assignVariable(
-            (func.arguments[i] as any).value,
+            (func.arguments[i] as any).name,
             evaluate(ASTnode.arguments[i], env)
           );
       }
